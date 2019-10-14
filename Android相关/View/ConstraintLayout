@@ -1,0 +1,10 @@
+#约束布局属性的使用
+-在约束布局中每一个控件都必须与约束布局或布局中的其他控件绑定，如：
+			app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/img_pay_state" 
+当然也可以不绑定，那就需要：tools:ignore="MissingConstraints"
+ 否则，会出现控件标红，等
+ -特别是在布局中头部或是底部的布局，你要设置  app:layout_constraintTop_toTopOf="parent" 或： app:layout_constraintBottom_toBottomOf="parent"
+ 否则无法对其使用layout_marginTop等；

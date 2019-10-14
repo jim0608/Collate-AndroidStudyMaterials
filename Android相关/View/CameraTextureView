@@ -1,0 +1,4 @@
+#LCameraTextureView extends TextureView实现控制摄像头镜面效果翻转
+1.textureView.setScaleX(-1f);//预览时左右翻转
+
+#CameraView extends SurfaceView  实现控制摄像头镜面效果翻转（https://blog.csdn.net/mbrose/article/details/80167781）

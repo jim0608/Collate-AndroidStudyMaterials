@@ -1,0 +1,19 @@
+#好的开源库：（https://github.com/wasabeef/awesome-android-ui）
+-List of Android UI/UX Libraries
+
+#快速获取SHA1、MD5
+https://www.jianshu.com/p/49e70c51c87f
+
+#用adb命令抓取log到本地电脑中（https://www.jianshu.com/p/e5eb85030c08?utm_campaign）
+
+#Android的布局优化，看这3点就够了！（https://mp.weixin.qq.com/s/43ijAppswfr4tx3zCy0WvQ）
+ 1.有些布局的在很多页面都用到了，而且样式都一样，每次用到都要复制粘贴一大段，有没有办法可以复用呢？
+
+ 2.解决了1中的问题之后，发现复用的布局外面总要额外套上一层布局，要知道布局嵌套是会影响性能的呐;
+
+ 3.有些布局只有用到时才会显示，但是必须提前写好，虽然设置了为无形或消失，还是多多少少会占用内存的。
+
+
+#Android5.0之后，锁屏30分钟之后手机会断开网络
+
+1.

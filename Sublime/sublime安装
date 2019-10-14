@@ -1,0 +1,33 @@
+##SublimeText3 安装过程：
+ 下载：sublime下载网址：https://www.sublimetext.com/3
+        PackageControl：https://github.com/wbond/package_control
+
+   方法一：##下载完成后，找到下载的文件，解压，将文件夹重命名为“Package Control”复制到sublime存放插件的目录 
+   [网站](https://blog.csdn.net/wuyou1336/article/details/78966337)
+   启动sublime：点击状态栏:Preferences > Package Settings > Package Control > Settings - User
+
+   方法二：解压好sublime后复制Package Control.sublime-package文件到SublimeText3\Data\Installed Packages文件夹下
+   		****注意：是Package Control.sublime-package而不是Package Control.sublime-packages等等
+   
+
+   		User文件下添加
+{
+	"bootstrapped": true,
+	"channels":
+	[
+		"http://cst.stu.126.net/u/json/cms/channel_v3.json"//或者：http://static.zybuluo.com/parkinwu/x5xsu1vjaob4hmktfexncfbz/channel_v3.json
+	],
+	"in_process_packages":
+	[
+	],
+	"installed_packages":
+	[
+		"1337 Color Scheme",
+		"ChineseLocalizations",
+		"Package Control"
+	]
+}
+
+
+   解决Sublime的package control被墙:https://blog.csdn.net/jyfu2_12/article/details/86667132
+   解决安装插件不成：https://blog.csdn.net/csdn_yudong/article/details/84866428

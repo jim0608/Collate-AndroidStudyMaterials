@@ -1,0 +1,28 @@
+#微信支付官方
+	-开发文档：https://pay.weixin.qq.com/wiki/doc/api/app/app.php?chapter=11_1#
+
+	![微信支付的架构和流程图](https://img-blog.csdn.net/20150321160503420)
+##微信相关文章
+##微信的文件包（.wxapi.WXPayEntryActivity)必须放在App根目录下否则无法调用
+	1.https://blog.csdn.net/lc_miao/article/details/79867140；描述了微信支付中的几大坑，可提前看一下，避免踩坑
+		（1）新建的WXPayEntryActivity类包名路径不对）长话短说，这里千言万语融成一句话：一定要在建立一个 包名.wxapi.WXPayEntryActivity比如你的包名是：com.example.demo。那么你就得配置一个com.example.demo.wxapi.WXPayEntryActivity
+			千万要注意，不要随便乱放这个Activity，也不能改名，就叫WXPayEntryActivity。包名跟你申请应用的时候填写的包名一致。
+		（2）AndroidManifest.xml注册WXPayEntryActivity（坑二：没有配置android:exported=“true”）android:exported=“true”，这个属性代表着运行被外界程序所启动这个Activity，微信对于我们的app来说就是外部程序了，要回调我们的Activity
+		<activity android:name=".wxapi.WXPayEntryActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            ></activity>
+        （3）实现IWXAPIEventHandler接口，注册API（坑三：没有在onCreate里注册API）
+        （4）在onResp方法里编写支付后的回调处理逻辑（坑四：回调处理逻辑搞错）
+
+	2.android微信支付问题总结：https://blog.csdn.net/zh1053935924/article/details/80915913
+		-改文章对微信支付步骤进行了详细的介绍，对新手教友好
+#在接微信支付时，出现问题：只能支付第一次，其后都不能支付
+	-2019/4/19：今日问题原因，微信官方平台的签名错误，平台上使用的是签名工具生产的包名，而不是App的签名字符串如：a12sdd13a2sd132sd31d3s2ds32等等；
+
+------
+#微信订单有效时间
+-订单的有效时长是由你传的参数time_expire决定，如果没有设置这个参数，在prepayid2小时失效后，需要重新请求下单获取新的prepay_id
+-【网站】
+-https://developers.weixin.qq.com/community/develop/doc/000e04dbee87d8f106682be3751c00?highLine=%25E8%25AE%25A2%25E5%258D%2595%25E6%2597%25B6%25E9%2597%25B4
+·

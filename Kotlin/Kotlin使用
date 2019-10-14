@@ -1,0 +1,16 @@
+#Kotlin中使用Fragment在onCreateView中给控件设置事件运行报null object空指针异常
+-在使用Kotlin时我们喜欢直接对xml文件中的控件id直接使用，但是在对Fragment的onCreateView 生命周期中使用时会遇到空指针异常的情况
+
+解决办法分为2种：
+
+1：onCreateView中使用前先进行 findViewById<>()操作然后在使用，不过不推荐，因为这就用不到Kotlin的方便了
+
+2：在Fragment的 onActivityCreated生命周期中操作，因为这时侯布局加载完成了，所以引用对象存在了
+
+3.在java与Kotlin混合使用时，java传值时是可以允许为null的，在Kotlin接收Java传过来的数据时，若Java数据中有Null则需要在接收的Kotlin的位置加上？，允许为空
+
+
+#（kotlin扩展函数(一)）[https://www.jianshu.com/p/25332d9a77e0]
+1.講了一些Kotlin使用方法，減少代碼量
+#（Kotlin扩展函数（二））[https://www.jianshu.com/p/d6858f10ecd4]
+2.使用Kotlin的一些Util 如創建fragment等

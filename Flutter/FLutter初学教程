@@ -1,0 +1,31 @@
+#（对Flutter进行了由浅入深的讲解）[https://flutterchina.club/get-started/test-drive/]
+#(对Flutter历史、思想等介绍)[https://book.flutterchina.club/]
+#(Flutter开发中异步编程的那些事)[https://mp.weixin.qq.com/s/t56dNg8iNAQ_gS3RCCxKkg]郭霖大神推荐文章
+
+#2019/10/12
+##Flutter学习（）
+1.flutter没有线程和进程的概念，而是一个底层的任务运行器，是把各个task runners运行在不同线程的(也可以相同，不推荐)，我们要牢记一点：embedder是真正的线程创建及管理者。
+	-embedder：Thread Setup，真正的线程创建及管理者，Embeder指的是将引擎移植到平台的中间层代码。
+2.Platform Task Runner：
+  对应线程：Android：主线程、iOS：主线程
+	一个Flutter应用启动的时候会创建一个Engine实例，Engine创建的时候会创建一个线程供Platform Runner使用。
+	-跟Flutter Engine的所有交互（接口调用）必须发生在Platform Thread。
+	-处理平台的消息
+3.UI Task Runner:
+  虽然名字叫UI，但是并不是Android，iOS的UI线程，只是flutter的UI线程，也就是我们平时开发的线程。用于执行Dart root isolate代码,Root isolate运行应用的main code。渲染逻辑，告诉Engine最终的渲染 对于每一帧，Engine要做的事情有： 
+
+	-Root isolate通知Flutter Engine有帧需要渲染。
+	-Flutter Engine通知平台，需要在下一个vsync的时候得到通知。
+	-平台等待下一个vsync（Android在需要绘制的时候系统发送的一个信号，16ms发送一次，代表一帧，具体请查阅资料）
+	-对创建的对象和Widgets进行Layout并生成一个Layer Tree，这个Tree马上被提交给Flutter Engine。当前阶段没有进行任何光栅化，这个步骤仅是生成了对需要绘制内容的描述。
+	-创建或者更新Tree，这个Tree包含了用于屏幕上显示Widgets的语义信息。这个东西主要用于平台相关的辅助Accessibility元素的配置和渲染。
+
+处理来自Native Plugins的消息；timers；microtasks；异步 I/O 操作(sockets, file handles, 等) 。
+
+4.event loops
+
+我们在写Dart代码的时候，就只有两种代码。
+
+同步代码：就是一行行写下来的代码；异步代码：就是以Future等修饰的代码。并不是指的我们平常异步，这两种代码的区别只有一个：代码运行的顺序是不同的，先运行同步代码，再运行异步代码，顺序执行。
+
+而异步代码是运行在event loop里的，event loops直译过来就是事件循环，对于Android开发者来说，再熟悉不过了，就是handler机制。

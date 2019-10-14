@@ -1,0 +1,5 @@
+**Android 9-patch shadow generator 
+*使用网站：http://inloop.github.io/shadow4android/
+*介绍：Draw 9-patch 工具是 Android Studio 中包含的一种 WYSIWYG（所见即所得）编辑器，利用此工具，您可以创建能够自动调整大小以适应视图内容和屏幕尺寸的位图图像。图像的选定部分可以根据图像内绘制的指示器在水平或竖直方向上调整比例。
+*可用于：自己切图、设置阴影，圆角，渐变色等
+使用教程：https://blog.csdn.net/sinat_38184748/article/details/88570703

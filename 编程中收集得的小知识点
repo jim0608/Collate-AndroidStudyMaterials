@@ -1,0 +1,40 @@
+#对double等浮点数据取小数点后两位
+    -方法一：String.format("%.2f",double);
+#layoutMaster:对UI的操作很方便
+
+#[Android 开源项目和文章集合（更新：2019.4.29）](https://blog.csdn.net/z979451341/article/details/78864907)
+-这里面讲了很多开元知识
+
+#[2019年 Android 开源框架](https://blog.csdn.net/mlq8087/article/details/88549615)
+-介绍了许多有用的框架;
+-如：lottie-android：一款可以在Android端快速展示Adobe Afeter Effect（AE）工具所作动画的框架
+
+## 使用gradlew
+在Android Studio中Terminals遇到的问题(Mac)
+
+1. 直接命令行使用 gradlew -> `command not found`
+2. ./gradlew ->  `权限不足`
+3. chmod +x gradlew 添加权限 ,然后按上面方式执行
+
+还有一种方法，在terminal里输入  
+`/gradlew app:dependencies`
+通过依赖树具体排查, 找到问题根源，排除掉
+`./gradlew dependencies -q --configuration compile`
+其中app换成你想要看依赖的module的名称
+
+#如何在一个<style name="A" > </style>中插入另外一个<style name="B" > </style>
+-在styleA中写入：<item name="android:theme">@style/B</item>，详情如下：
+	+
+	<style name="A" >
+		<item name="android:theme">@style/B</item>
+	 </style>
+
+#AndroidStudio学习其他人的代码时，快速定位到当前界面的Activity及布局
+——>点击导航栏“Tools”，
+——>点击“layout inspector”，
+——>选择当前的包名
+——>就可以看到当前已经在activity栈的activity，在这你就可以看到你现在打开的界面的Activity，在点击进去还可以看到当前布局的id等信息
+
+#(xitu/gold-miner)[https://github.com/xitu/gold-miner/blob/master/android.md]（掘金：android）
+
+#(Android进阶知识：类加载相关)[https://juejin.im/post/5d6875d3e51d453b1e478b09]

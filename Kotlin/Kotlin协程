@@ -1,0 +1,12 @@
+#(Kotlin Coroutine（协同程序）原理解析)[https://www.jianshu.com/p/06703abc56b1]
+1.Kotlin Coroutine 是基于 Callback 机制。
+2.通过讲解Kotlin Coroutine suspending相关知识分析Kotlin协程是如何使用及其运行规则
+ 如：
+ ```
+ suspend fun postItem(item: Item): PostResult {
+  val token = requestToken()
+  val post = createPost(token, item)
+  val postResult = processPost(post)
+  return postResult
+}
+```

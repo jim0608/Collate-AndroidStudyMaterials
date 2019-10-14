@@ -1,0 +1,88 @@
+#融云实现Android端与web端连接问题收集
+
+#.融云在线聊天
+##[官方网站](https://www.rongcloud.cn/docs/android.html#ui_customize)
+一、布局自定义
+
+部分布局文件如下，您可以通过修改对应的布局文件来调整界面布局，修改背景，更改字体等。
+
+1、rc_ext_extension_bar.xml 输入框布局文件。它是整个输入框的容器，内部有对各部分组件功能描述。
+
+2、rc_ext_input_edit_text.xml EditText 布局文件。如果想要替换背景，直接修改即可。
+
+3、rc_ext_voice_input.xml 语音输入布局文件。
+
+# 融云集成问题
+[IM文档](https://www.rongcloud.cn/docs/android_imlib.html#integration)
+[CallKit文档](https://www.rongcloud.cn/docs/android_callkit.html)
+
+### Demo集成时遇到的问题
+
+1. 不会启动 ipc进程
+    - 需要 libsqlite.so ,注意添加 jniLibs.srcDirs = ['libs']
+    - 注意 ndk
+    ```
+    ndk {
+        abiFilters "armeabi-v7a", "arm64-v8a"
+    }
+    ```
+    - 如果集成了CallLib，只能使用上述两个，文档上是这么说的。
+2. 设备音视频连接时崩溃
+    强制使用 26版后Demo没有问题了，很奇怪
+    ```
+    configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            def requested = details.requested
+            if (requested.group == 'com.android.support') {
+                if (!requested.name.startsWith("multidex")) {
+                    details.useVersion '26.0.0'
+                }
+            }
+        }
+    }
+    ```
+
+### 测试账号
+appkey:cpj2xarlctwcn
+测试连锁大药房1分店
+店长：19122222222
+
+{"code":200,"userId":"lujinming","token":"3GVwjOmb20/WgDDtNI5s/Fnqe5cFPL4CnnP2jNzqPI/2oRWf0bkPhCIW3TyCn9HDJML7uZOe16CaIQEah7elUVoVqoKcokds"}
+{"code":200,"userId":"chengang","token":"MjYXPXcsbi4UaR4THK/fE1nqe5cFPL4CnnP2jNzqPI/2oRWf0bkPhBMQJ2cOFquKa2iXdv7DPkzgWAmV1pip8loVqoKcokds"}
+{"code":200,"userId":"changqiang","token":"Yn7fPc/3XpbCV+XQVKh9mVnqe5cFPL4CnnP2jNzqPI/2oRWf0bkPhKoGbWKbNQ5wBD8ifwIEVMherdtZNuFaIh6oAbo4orp0"}
+
+医生：
+18122221111
+
+
+appkey:8luwapkv8jzal
+
+大医安卓测试2
+店长：19960376040
+医生：18353244924
+药师：18353244925
+
+#融云实现Android端与web端连接问题
+1.出现bug描述：
+ 1.Android端点击挂断，web端能够接收到监听跟着一起挂断
+ 2.web端点击挂断，Android能接收到监听，实时跟着挂断
+ 3.Android端呼叫web端，web端能接收到Android的呼叫通知，web端点击接听时，Android段未接收到web端点击接听的返回消息
+
+ 问题：门店端与Android demo相互呼叫：成功
+ 门店端呼叫web端：web端收到呼叫消息，点击接听，手机端收不到接通的回传
+ demo呼叫web端：web端收到呼叫消息，点击接听，手机端收不到接通的回传
+
+ 思路一：web点击挂断：我这边收到回调：大debug查看收到回调的位置，查到点击接听时收到的回调
+ 思路二：查看web端点击接通时这边是否收到回调，以及查看web端点击挂断时是否收到回调
+
+原因：可能是web端A 点击接听时需要我的B机器呼过去的UserID，否者他点击接听时，他找不到对应的User，所以：会出现Android端呼过去web端能接受到消息，web端点击接听时Android端仍然是正在呼叫中
+
+解决办法：流程：1.将Android端的发起呼叫的的UserId发给web同事，让同事使用该userId实现用web端回呼Android端，Android能够接收到呼叫消息
+            2.再用Android端去呼叫web端，当web端点击接听时，Android就能收到回传消息（这个方法和融云官方的一致，也是需要targetId）
+
+  融云官方解决办法.排查下web接听通话时 传入的 targetId 是否是安卓端的 userId , 这个需要确定下，如果这个传错了 安卓端时收不到 web 端接听的消息的。
+
+如果 web 端接听后没有报错，说明 web 端时接听成功的。
+
+
+

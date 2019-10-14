@@ -1,0 +1,8 @@
+1.Wireshark抓手机的应用包
+	-电脑开启wifi共享（猎豹、360等），手机连接共享出的wifi
+	-打开电脑的网络和共享中心，选择开启的wifi，查看当前wifi的连接如：（连接：本地连接*11）
+	-打开Wireshark，选择上面看到的连接（本地连接*11），就可以抓到手机的报了
+
+2.Wireshark使用详解（https://blog.csdn.net/qq_36119192/article/details/84671638）
+
+3.wireshark抓取手机包，详细教程（https://www.jianshu.com/p/4a554f55fe9c）

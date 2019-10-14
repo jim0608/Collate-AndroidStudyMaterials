@@ -1,0 +1,24 @@
+1. eventbus 在A中注册了，且在A中结束，
+ 问：在A中注册的会不会在其他activity中接收到
+2. 有没有办法将try{}catch{}写成一个方便调用且代码观赏性高的组件
+3. 如何保持app不被杀死
+	-1.进程保活
+	-2.让用户，将app加入白名单需要权限
+
+4.在做重写注册流程时，一直无法下手，总觉得逻辑没有通顺，需求未清晰
+	-1.在经过很长时间，在重构的代码反复琢磨，效率极低
+	-2.经过思考，发现重构的注册流程与登录接口是关联的（居然现在才发现），且登录界面及数据是我即将做的注册信息填写的入口
+	-3.在做重构功能代码时，首先找到该功能的入口（既进入这个功能的界面），在找到这个重构功能代码的输出（这段代码运行完成后，数据及界面展示结果），
+	-4.***所以在做功能时，无论是重构，还是新开功能都应该先确定该功能的：入口及出口！
+
+5.Android:Error running 'app': Default Activity not found（https://blog.csdn.net/DeMonliuhui/article/details/83046252）
+-错误原因可能是上一次强制关闭AS导致缓存有问题
+-手动清除缓存
+	-删除 项目路径下的 .gradle .idea 文件 以及 app 目录下的build文件，找到C 盘。用户目录。.AndroidStudio版本号 .AndroidStudio3.3\system\cache 文件夹，关闭studio后将其删除
+-(https://blog.csdn.net/qq_40909351/article/details/88429032)
+
+6.什么是泛型
+
+7.What went wrong: Execution failed for task 'XXX:compileDebugJavaWithJavac'. Compilation failed; see the compiler error output for details.
+-通过百度：并尝试，这次解决了这个问题，原因是gradle版本不对或者默认的classpath 'com.android.tools.build:gradle:3.1.2 下载的数据有丢包
+：解决方法：在as中的setting中的gradle选择本地下载的gradle-4.4，rebuild一次就好了，

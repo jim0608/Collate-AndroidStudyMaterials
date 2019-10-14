@@ -1,0 +1,1050 @@
+#将手机的文件或图片拿出到电脑中
+D:\Logcat> adb pull /sdcard/Android/data/com.dayishi.dayizhihui.drugstore/cache/prescription_1565073824210.jpg
+首先在命令控制面板跳转到你想保存的位置，然后 输入adb pull +（你想拿出来的文件）
+
+#长期抓取日志
+adb shell logcat -v time >restart.log
+
+#adb 启动应用
+1. adb shell //连接
+2. pm list packages //找到包名
+3. monkey -p {包名} -c android.intent.category.LAUNCHER --pct-syskeys 0 -v 1   //启动程序
+
+monkey -p com.willme.topactivity -c android.intent.category.LAUNCHER --pct-syskeys 0 -v 1//启动当前Activity
+
+#安装apk
+adb install -r DrugStore_gold_v1.1.6(19)_20190612.apk
+#卸载apk
+adb uninstall com.dayishi.dayizhihui.drugstore
+
+#（adb常用命令）[https://www.jianshu.com/p/ca06a4d1447b]
+
+在填写订单界面的优惠券返回时会直接调用Activity finish
+
+
+
+package com.dayizhihui.dayishi.drugstore.view.ui.activity
+
+import android.animation.Animator
+import android.app.LocalActivityManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.graphics.Color
+import android.hardware.Camera
+import android.media.FaceDetector
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
+import android.support.v4.view.PagerAdapter
+import android.support.v4.view.ViewPager
+import android.text.TextUtils
+import android.util.Log
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.ImageView
+import android.widget.TextView
+import com.dayizhihui.dayishi.drugstore.App
+import com.dayizhihui.dayishi.drugstore.AppConfig
+import com.blackbox.boatlauncher.R
+import com.dayizhihui.dayishi.drugstore.boat.Robot
+import com.dayizhihui.dayishi.drugstore.boat.RobotAction
+import com.dayizhihui.dayishi.drugstore.boat.RobotHMI
+import com.dayizhihui.dayishi.drugstore.face.FaceHandler
+import com.dayizhihui.dayishi.drugstore.model.data.DefaultData
+import com.dayizhihui.dayishi.drugstore.model.data.LocalData
+import com.dayizhihui.dayishi.drugstore.model.other.QianFang
+import com.dayizhihui.dayishi.drugstore.utils.LVoiceToast
+import com.dayizhihui.dayishi.drugstore.utils.RobotMediaPlayer
+import com.dayizhihui.dayishi.drugstore.view.ui.activity.settings.AddMemberActivity
+import com.dayizhihui.dayishi.drugstore.view.ui.dialog.SavaeUserInforDialog
+import com.blackbox.lerist.dialog.LTextPreviewDialog
+import com.blackbox.lerist.face.user.entity.FaceUserInfo
+import com.blackbox.lerist.face.widget.RobotFollowFaceView
+import com.blackbox.lerist.mvp.presenter.IPresenter
+import com.blackbox.lerist.utils.LAskPermissions
+import com.blackbox.lerist.utils.LLog
+import com.blackbox.lerist.utils.StringUtils
+import com.blackbox.lerist.voice.main.RobotASR
+import com.blackbox.lerist.voice.main.RobotTTS
+import com.blackbox.lerist.voice.model.Action
+import com.blackbox.lerist.voice.model.VoiceCommand
+import com.blackbox.lerist.voice.model.VoiceCommandItem
+import com.blackbox.lerist.voiceinvoker.interfaces.OnRecognizerListener
+import com.blackbox.lerist.voiceinvoker.interfaces.OnSynthesizerListener
+import com.blackbox.lerist.widget.LToast
+import com.blackbox.xjbsdk.XJBSDK
+import com.blackbox.xjbsdk.ble.BluetoothTestCase
+import com.blankj.ALog
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.dayizhihui.dayishi.drugstore.feature.banner.Bannerbean
+import com.dayizhihui.dayishi.drugstore.feature.banner.loader.GlideImageLoader
+import com.dayizhihui.dayishi.drugstore.forqianfang.utils.QianFangIdentityUtils
+import com.dayizhihui.dayishi.drugstore.main.presenter.ExpressionPresenter
+import com.dayizhihui.dayishi.drugstore.main.presenter.MainContract
+import com.dayizhihui.dayishi.drugstore.main.view.MainActivity
+import com.dayizhihui.dayishi.drugstore.network.URLConfig
+import com.dayizhihui.dayishi.drugstore.network.client.BaseClient
+import com.dayizhihui.dayishi.drugstore.rong.RongClient
+import com.dayizhihui.dayishi.drugstore.utils.GsonUtils
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
+import com.lzy.okgo.OkGo
+import com.lzy.okgo.callback.StringCallback
+import com.lzy.okgo.model.Response
+import com.yanzhenjie.nohttp.Logger
+import com.youth.banner.BannerConfig
+import com.youth.banner.listener.OnBannerListener
+import kotlinx.android.synthetic.main.activity_expression.*
+import org.json.JSONException
+import org.json.JSONObject
+import java.util.*
+
+class ExpressionActivity : LBaseVoiceActivity(), View.OnClickListener, OnBannerListener , MainContract.ExpressionView{
+    override fun onGetFunctionFailure() {
+    }
+    override fun onGetFunctionSuccess() {
+    }
+
+    var view_lis = ArrayList<View>()
+    var loc = LocalActivityManager(this, false)
+
+    var Initialize = true
+    private lateinit var expressionPresenter: ExpressionPresenter
+
+    var images = intArrayOf(R.mipmap.scroll_right_img,
+            R.mipmap.scroll_left_img,
+            R.mipmap.scroll_center_img,
+            R.mipmap.scroll_right_img,
+            R.mipmap.scroll_left_img,
+            R.mipmap.scroll_center_img)
+
+    private val VOICE_HIDE_TEXT = 0
+    private val VOICE_ASR_SHOW_TEXT = 1
+    private val VOICE_TTS_SHOW_TEXT = 2
+
+    private var onSynthesizerListener: OnSynthesizerListener? = null
+
+    private var savaeUserInforDialog: SavaeUserInforDialog? = null
+    private var qianfangBroadcastReceiver: BroadcastReceiver? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        setContentView(R.layout.activity_expression)
+
+        initView()
+        initVoice()
+        initVarious()
+
+        if (App.isXJB()) {
+            //想家宝平板, 搜索底座
+            initXJB()
+        }
+        initFaceFollow()
+        Robot.getInstance().stopLevel(1)
+        initPermissions()
+        qianfang()
+    }
+
+     private fun initVarious() {
+         expressionPresenter = ExpressionPresenter(this)
+    }
+
+
+    override fun onStart() {
+        isStoped = false
+        super.onStart()
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        isStoped = false
+        getBannerInfo()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        expressionPresenter.getFunctionList()
+        startListening()
+        //开始人脸跟踪
+//        a_expression_rffv.startFollowing()
+        //启用欢迎引导
+        FaceHandler.getInstance().setEnableSayWelcome(true)
+        connectXjb()
+        RobotHMI.start()
+
+        if (!AppConfig.isBoat()) {
+            han.removeMessages(0)
+            han.sendEmptyMessageDelayed(1, 5000)
+        }
+    }
+
+    override fun onPause() {
+
+        super.onPause()
+        if (App.isXJB()) {
+            XJBSDK.getInstance().clearDevice()
+            XJBSDK.getInstance().stopSearchDevices()
+        }
+        //停止人机交互
+        RobotHMI.shutdown()
+        //停止轮播计时
+//        start.interrupt()
+//        switch = false
+//        han.removeCallbacksAndMessages(null)
+        if (!AppConfig.isBoat()) {
+            han.removeMessages(0)
+            han.removeCallbacksAndMessages(null)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (!AppConfig.isBoat()) {
+            han.removeMessages(0)
+            han.removeCallbacksAndMessages(null)
+        }
+
+        if (qianfangBroadcastReceiver != null) {
+            unregisterReceiver(qianfangBroadcastReceiver)
+            qianfangBroadcastReceiver = null
+        }
+    }
+
+
+    override fun onClick(p0: View?) {
+
+        when (p0?.id) {
+            R.id.dialog_userInfor_noSave_btn -> {
+                if (savaeUserInforDialog != null) {
+//                    AppConfig.isQiangFangCall = false
+                    AppConfig.qianFangData = null
+                    savaeUserInforDialog?.dismiss() }
+            }
+            R.id.dialog_userInfor_save_btn -> {
+                val intent = Intent(this@ExpressionActivity, MainActivity::class.java)
+                intent.putExtra("qianfang", 1)
+                intent.putExtra("tabIndex",0)
+                startActivity(intent)
+                savaeUserInforDialog?.dismiss()
+            }
+        }
+    }
+
+    override fun getPresenters(): Array<IPresenter>? {
+        return null
+    }
+
+    override fun isDisableGlobalVoiceCommand(): Boolean {
+        return false
+    }
+
+    override fun isDisableBackVoiceCommand(): Boolean {
+        return true
+    }
+
+    override fun buildVoiceCommand(): VoiceCommand? {
+        return VoiceCommand(VoiceCommandItem("人脸识别", arrayOf("认识我", "我是", "我叫"), arrayOf("名字", "吗", "么", "谁", "*"),
+                object : Action() {
+                    override fun execute(voicetext: String?): Int {
+                        startListening()
+                        FaceHandler.getInstance().identify(Arrays.asList(DefaultData.getMemberFaceGroupId(), DefaultData.getClerkFaceGroupId()), object : FaceHandler.OnIdentifyListener {
+                            override fun onMaybeIdentified(faceDatas: ByteArray?, score: Double, faceUserInfo: FaceUserInfo) {
+                                LLog.e(faceUserInfo)
+                                startSpeak("你是" + faceUserInfo.getName() + "吗？我还没看清楚,靠近一点再问我好吗")
+                            }
+
+                            override fun onNotMatchUser() {
+                            }
+
+                            override fun onIdentified(faceDatas: ByteArray?, score: Double, faceUserInfo: FaceUserInfo) {
+                                LLog.e(faceUserInfo)
+                                val hint = if (faceUserInfo.gender == 1) "今天你很帅哦" else "今天你很漂亮哦"
+                                startSpeak(faceUserInfo.getName() + "你好, " + hint)
+                            }
+
+                            override fun onUnidentify() {
+                                startSpeak("我还不认识你, 对我说\"记住我\", 我就可以开始认识你啦")
+                            }
+
+                            override fun onNotFoundFace() {
+                                startSpeak("你在哪儿呢? 我没看到你")
+                                if (Random().nextBoolean()) {
+                                    Robot.getInstance().moveRight(30, 2, 0)
+                                } else {
+                                    Robot.getInstance().moveLeft(30, 2, 0)
+                                }
+                            }
+
+                            override fun onFaild(msg: String?) {
+                                startSpeak("查询错误")
+                                LVoiceToast.show(context, msg)
+                            }
+                        })
+                        return super.execute(voicetext)
+                    }
+                }),
+                VoiceCommandItem("人脸注册", arrayOf("记住我", "人脸注册", "认识一下", "请记住", "记住"), arrayOf("*"),
+                        object : Action() {
+                            override fun execute(voicetext: String?): Int {
+                                startActivity(AddMemberActivity::class.java)
+                                return super.execute(voicetext)
+                            }
+                        }),
+                VoiceCommandItem("人脸删除", arrayOf("忘记", "忘了"), arrayOf("我"),
+                        object : Action() {
+                            override fun execute(voicetext: String?): Int {
+                                startSpeak("确定要我忘记你吗?")
+                                return super.execute(voicetext)
+                            }
+                        },
+                        VoiceCommand(VoiceCommandItem("取消删除", arrayOf("取消", "算了", "不"),
+                                object : Action() {
+                                    override fun execute(voicetext: String?): Int {
+                                        startSpeak("好的, 那我陪你聊聊天吧")
+                                        return super.execute(voicetext)
+                                    }
+                                }),
+                                VoiceCommandItem("确认删除", arrayOf("确认", "确定"),
+                                        object : Action() {
+                                            override fun execute(voicetext: String?): Int {
+                                                startSpeak("好的")
+                                                FaceHandler.getInstance().deleteUser(object : FaceHandler.OnDeleteListener {
+                                                    override fun onNotFoundFace() {
+                                                        startSpeak("你在哪儿呢? 我没看到你")
+                                                        if (Random().nextBoolean()) {
+                                                            Robot.getInstance().moveRight(30, 2, 0)
+                                                        } else {
+                                                            Robot.getInstance().moveLeft(30, 2, 0)
+                                                        }
+                                                    }
+
+                                                    override fun onSucceed() {
+                                                        startSpeak("我已经忘记你了, 对我说[记住我],我能重新认识你")
+                                                    }
+
+                                                    override fun onFaild(msg: String?) {
+                                                        startSpeak("忘记失败, 请再试一次")
+                                                        LToast.show(context, msg)
+                                                    }
+
+                                                })
+                                                return super.execute(voicetext)
+                                            }
+                                        }))),
+                VoiceCommandItem("启用问好", arrayOf("启用", "打开", "开启", "开始"), arrayOf("问好"),
+                        object : Action() {
+                            override fun execute(voicetext: String?): Int {
+                                startSpeak("问好模式已开启")
+                                a_expression_rffv.cameraTextureView.zoom = AppConfig.getCameraZoom()
+                                FaceHandler.getInstance().isEnableSayHello = true
+                                return super.execute(voicetext)
+                            }
+                        }),
+                VoiceCommandItem("停用问好", arrayOf("停用", "关闭", "退出", "结束"), arrayOf("问好"),
+                        object : Action() {
+                            override fun execute(voicetext: String?): Int {
+                                startSpeak("问好模式已关闭")
+                                a_expression_rffv.cameraTextureView.setZoom(5)
+                                FaceHandler.getInstance().isEnableSayHello = false
+                                return super.execute(voicetext)
+                            }
+                        }),
+                VoiceCommandItem("启用迎宾", arrayOf("启用", "打开", "开启", "开始"), arrayOf("迎宾", "接待"),
+                        object : Action() {
+                            override fun execute(voicetext: String?): Int {
+                                startSpeak("迎宾模式已开启")
+                                a_expression_rffv.cameraTextureView.setZoom(AppConfig.getCameraZoom())
+                                FaceHandler.getInstance().setEnableSayWelcome(true)
+                                return super.execute(voicetext)
+                            }
+                        }),
+                VoiceCommandItem("停用迎宾", arrayOf("停用", "关闭", "退出", "结束"), arrayOf("迎宾", "接待"),
+                        object : Action() {
+                            override fun execute(voicetext: String?): Int {
+                                startSpeak("迎宾模式已关闭")
+                                a_expression_rffv.cameraTextureView.setZoom(5)
+                                FaceHandler.getInstance().setEnableSayWelcome(false)
+                                return super.execute(voicetext)
+                            }
+                        }),
+                VoiceCommandItem("你好", arrayOf("(你好)"),
+                        object : Action() {
+                            override fun execute(voicetext: String?): Int {
+                                val arrayOf = arrayOf("我们来聊聊天吧", "对我说\"唱首歌\", 我可以唱歌给你听哦")
+                                FaceHandler.getInstance().identify(Arrays.asList(DefaultData.getMemberFaceGroupId(),
+                                        DefaultData.getClerkFaceGroupId()), object : FaceHandler.OnIdentifyListener {
+
+                                    override fun onIdentified(faceDatas: ByteArray?, score: Double, faceUserInfo: FaceUserInfo) {
+                                        startSpeak(StringUtils.toFriendlyTimeframe(System.currentTimeMillis()) + "好呀" +
+                                                faceUserInfo.getName() + "。" + arrayOf[Random().nextInt(arrayOf.size)])
+                                    }
+
+                                    override fun onNotMatchUser() {
+                                    }
+
+                                    override fun onMaybeIdentified(faceDatas: ByteArray?, score: Double, faceUserInfo: FaceUserInfo) {
+                                        startSpeak("你好呀。" + arrayOf[Random().nextInt(arrayOf.size)])
+                                    }
+
+                                    override fun onUnidentify() {
+                                        startSpeak("你好呀。" + arrayOf[Random().nextInt(arrayOf.size)])
+
+                                    }
+
+                                    override fun onNotFoundFace() {
+                                        startSpeak("你好呀。" + arrayOf[Random().nextInt(arrayOf.size)])
+                                    }
+
+                                    override fun onFaild(msg: String?) {
+                                        startSpeak("你好呀。" + arrayOf[Random().nextInt(arrayOf.size)])
+                                    }
+                                })
+                                return super.execute(voicetext)
+                            }
+                        }))
+    }
+
+
+    private fun initPermissions() {
+        LAskPermissions.requestPermissions(this, AppConfig.getAppPermissions(),
+                object : LAskPermissions.RequestPermissionCallback {
+                    override fun granted() {
+
+                    }
+
+                    override fun denied(deniedPermissions: List<String>?) {
+                    }
+                })
+    }
+
+    private fun initXJB() {
+        XJBSDK.getInstance().init(context)
+        XJBSDK.getInstance().setOnBluetoothListener(object : BluetoothTestCase.OnBluetoothListener {
+            override fun startSearching(mac: String?) {
+
+            }
+
+            override fun stopSearching() {
+            }
+
+            override fun connected(mac: String?) {
+                if (isStoped) {
+                    return
+                }
+                if (mac.equals(XJBSDK.getInstance().deviceMac)) {
+                    LToast.show(context, "底座已连接")
+                }
+            }
+
+            override fun disconnected() {
+                if (isStoped) {
+                    return
+                }
+                runOnUiThread {
+                    LToast.show(context, "连接底座...")
+                    connectXjb()
+                }
+
+            }
+
+            override fun pairfail() {
+
+            }
+
+            override fun pairsuc() {
+            }
+
+        })
+        connectXjb()
+    }
+
+    private fun connectXjb() {
+        if (App.isXJB()) {
+            var xjbsn = LocalData.SETTINGS.xjbsn
+            if (xjbsn == null) {
+            }
+            if (!TextUtils.isEmpty(xjbsn)) {
+                XJBSDK.getInstance().connectDevice(xjbsn)
+            } else {
+                XJBSDK.getInstance().disconnect()
+            }
+        }
+
+    }
+
+    private fun disconnectXjb() {
+        if (App.isXJB()) {
+            XJBSDK.getInstance().disconnect()
+        }
+    }
+
+
+    fun send_handler_() {
+        han.sendEmptyMessageDelayed(1, 5000)
+    }
+
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        if (!AppConfig.isBoat()) {
+            han.removeMessages(0)
+            han.removeCallbacksAndMessages(null)
+            han.sendEmptyMessageDelayed(2, 5000)
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    var currentItem = -1
+    internal var han: Handler = object : Handler() {
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+            when (msg.what) {
+                1 -> {
+                    var curItem = shuffling_pager.currentItem
+                    shuffling_pager.setCurrentItem(curItem + currentItem)
+
+                    // currentItem++  //black.box
+                    if (currentItem == -1) {
+                        currentItem = 1
+                    }
+                    if (currentItem == 0) {
+                        currentItem = 1
+                    }
+                    if (currentItem == 1) {
+                        currentItem = -1
+                    }
+
+                    send_handler_()
+                }
+                2 -> {
+                    send_handler_()
+                }
+                3 -> {
+                }
+            }
+        }
+    }
+
+    private var isStoped: Boolean = false
+
+
+    override fun onStop() {
+        isStoped = true
+        super.onStop()
+    }
+
+    override fun onRelease() {
+        super.onRelease()
+        FaceHandler.getInstance().isEnableSayHello = false
+        if (onSynthesizerListener != null)
+            RobotTTS.getInstance().removeOnSynthesizerListener(onSynthesizerListener)
+
+        if (App.isXJB()) {
+            XJBSDK.getInstance().release()
+        }
+    }
+
+
+    private fun initView() {
+
+        if (!App.isBoat()) {
+            a_expression_tv_guide.visibility = View.GONE
+            a_expression_tv_hint.visibility = View.GONE
+        }
+        a_expression_tv_hint.setOnClickListener {
+            if (a_expression_tv_hint.text.isEmpty()) {
+                return@setOnClickListener
+            }
+            LTextPreviewDialog.with(supportFragmentManager).setText(a_expression_tv_hint.text, 26).show()
+        }
+        a_expression_iv.setOnClickListener {
+            if (RobotTTS.getInstance().isSpeaking) {
+                RobotASR.getInstance().stopListening()
+                RobotTTS.getInstance().stopSpeak()
+                RobotASR.getInstance().startListening()
+                return@setOnClickListener
+            }
+            if (RobotMediaPlayer.isPlaying()) {
+                RobotMediaPlayer.stop()
+                return@setOnClickListener
+            }
+            RobotAction.stop()
+            if (LocalData.USER.isLogined) {
+                startActivity(MainActivity::class.java)
+            } else {
+                startActivity(RegistActivity::class.java)
+            }
+        }
+        if (AppConfig.isBoat()) {
+            shuffling_pager.setVisibility(View.GONE)
+            grop_lift.setVisibility(View.GONE)
+            grop_rigt.setVisibility(View.GONE)
+            Glide.with(this).load(R.raw.awaken_one).asGif().diskCacheStrategy(DiskCacheStrategy.SOURCE).centerCrop().into(a_expression_iv)
+        } else {
+            getBannerInfo()
+
+            shuffling_pager.setOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+                override fun onPageSelected(arg0: Int) {
+                }
+
+                override fun onPageScrolled(arg0: Int, arg1: Float, arg2: Int) {}
+
+                override fun onPageScrollStateChanged(arg0: Int) {}
+            })
+            lift_click.setOnClickListener {
+                if (shuffling_pager.currentItem == 0) {
+                    shuffling_pager.setCurrentItem(1)
+                } else {
+                    if (shuffling_pager.currentItem == 1) {
+                        shuffling_pager.setCurrentItem(0)
+                    }
+                }
+            }
+            rigt_click.setOnClickListener {
+                if (shuffling_pager.currentItem == 0) {
+                    shuffling_pager.setCurrentItem(1)
+                } else {
+                    if (shuffling_pager.currentItem == 1) {
+                        shuffling_pager.setCurrentItem(0)
+                    }
+                }
+            }
+
+
+        }
+        a_expression_btn_switch.setOnClickListener {
+            if (FaceHandler.getInstance().isEnableSayWelcome) {
+                FaceHandler.getInstance().isEnableSayWelcome = !FaceHandler.getInstance().isEnableSayWelcome
+                startSpeak("迎宾模式已关闭")
+                a_expression_rffv.cameraTextureView.setZoom(5)
+            } else {
+                FaceHandler.getInstance().isEnableSayWelcome = !FaceHandler.getInstance().isEnableSayWelcome
+                startSpeak("迎宾模式已打开")
+                a_expression_rffv.cameraTextureView.setZoom(AppConfig.getCameraZoom())
+            }
+            a_expression_btn_switch.setTint(if (FaceHandler.getInstance().isEnableSayWelcome) resources.getColor(R.color.colorPrimary) else Color.WHITE)
+        }
+        a_expression_btn_switch.setTint(if (FaceHandler.getInstance().isEnableSayWelcome) resources.getColor(R.color.colorPrimary) else Color.WHITE)
+        a_expression_guide_btn_seedoctor.setOnClickListener { v ->
+            RobotASR.getInstance().callDisposeCommand((v as TextView).text.toString())
+        }
+        a_expression_guide_btn_prescription.setOnClickListener { v ->
+            RobotASR.getInstance().callDisposeCommand((v as TextView).text.toString())
+        }
+        a_expression_guide_btn_reg.setOnClickListener { v ->
+            RobotASR.getInstance().callDisposeCommand((v as TextView).text.toString())
+        }
+        a_expression_guide_btn_jsh.setOnClickListener { v ->
+            RobotASR.getInstance().callDisposeCommand((v as TextView).text.toString())
+        }
+    }
+
+    private fun getBannerInfo() {
+        val paramJsonObject = JSONObject()
+        paramJsonObject.put("cj_id", LocalData.USER.cj_id)
+        paramJsonObject.put("app_id", DefaultData.app_id)
+        paramJsonObject.put("token", DefaultData.token)
+        paramJsonObject.put("user_id", DefaultData.user_id)
+        //
+        OkGo.post<String>(BaseClient.HOST() + URLConfig.getBannerInfo)
+                .tag(this)
+                .upJson(paramJsonObject)
+                .execute(object : StringCallback() {
+                    override fun onSuccess(response: Response<String>?) {
+
+                        try {
+                            val body = response!!.body()
+                            val obj = JSONObject(body)
+                            val result = obj.getString("object")
+                            val isSuccess = obj.getBoolean("success")
+                            if (isSuccess) {
+                                val bean = GsonUtils.fromJson(result, Bannerbean::class.java)
+                                var list = bean.wheel_planting.split("")
+                                if (!list.isEmpty()) {
+                                    shuffling_pager.visibility = View.GONE
+                                    banner.visibility = View.VISIBLE
+                                    banner.setImages(list)
+                                            .setBannerStyle(BannerConfig.NOT_INDICATOR)
+                                            .isAutoPlay(true)
+                                            .setImageLoader(GlideImageLoader())
+                                            .setDelayTime(5000)
+                                            .setOnBannerListener(this@ExpressionActivity)
+                                            .start()
+                                } else {
+                                    localBanner()
+                                }
+                            } else {
+                                localBanner()
+                            }
+                        } catch (e: JSONException) {
+                            e.printStackTrace()
+                            Logger.i(e.message)
+                            localBanner()
+                        }
+                    }
+
+                    override fun onError(response: Response<String>?) {
+                        super.onError(response)
+                        localBanner()
+                    }
+                })
+
+    }
+
+    /**
+     * 加载本地banner图
+     */
+    fun localBanner() {
+        shuffling_pager.visibility = View.VISIBLE
+        banner.visibility = View.GONE
+//        loc.dispatchCreate(savedInstanceState)
+        for (i in images.indices) {
+            val imageView = ImageView(this@ExpressionActivity)
+            imageView.setScaleType(ImageView.ScaleType.FIT_XY)
+            imageView.setImageResource(images[i])
+            imageView.setOnClickListener {
+                onclick()
+            }
+            view_lis.add(imageView)
+        }
+        shuffling_pager.setAdapter(satrt())
+        shuffling_pager.setCurrentItem(1000 * view_lis.size)
+    }
+
+    /**
+     * 点击Banner触发的事件*新
+     */
+    override fun OnBannerClick(position: Int) {
+        a_expression_iv.performClick()
+    }
+
+    /**
+     * 点击Banner触发的事件
+     */
+    public fun onclick() {
+        a_expression_iv.performClick()
+    }
+
+    /**
+     * 千方百计
+     */
+    fun qianfang() {
+        qianfangBroadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+
+                val action = intent.action
+                ALog.dTag("TAG_RONG_QIANFANG", GsonUtils.toJson(action))
+                if (action.equals(RongClient.qianfang)) {
+                    val order = intent.getStringExtra("Order")
+                    val strBody = order.substring(7, order.length)
+
+                    var gson: Gson = Gson()
+                    try {
+                        AppConfig.qianFangData = gson.fromJson<QianFang>(strBody, QianFang::class.java)
+                        if (savaeUserInforDialog == null) {
+                            savaeUserInforDialog = SavaeUserInforDialog()
+                        }
+                        savaeUserInforDialog?.setOnBtnClickListener(this@ExpressionActivity)?.show(supportFragmentManager, "您呼叫的药师已经接通，是否开始远程审方?&取消&连接")
+                    } catch (e: JsonSyntaxException) {
+                    }
+                } else if (action.equals(RongClient.found_face)) {
+                    RobotTTS.getInstance().startSpeak("您有新的订单,请注意查收.")
+                } else if (action.equals(RongClient.qianfang)) {
+                    val json = intent.getStringExtra("Order")
+                    val token = json.substring(7)
+                    QianFangIdentityUtils.getInstance().setInfo(token)
+                    MainActivity.QF_FOUND_FACE = token
+                    Log.d("FOUND_FACE", "ExpressionActivity,token:${token}")
+                    val intent = Intent(this@ExpressionActivity, MainActivity::class.java)
+                    intent.putExtra("tabIndex",7)
+                    startActivity(intent)
+                }
+            }
+        }
+
+        val myIntentFilter = IntentFilter()
+        myIntentFilter.addAction(RongClient.qianfang)
+        myIntentFilter.addAction(RongClient.order)
+        myIntentFilter.addAction(RongClient.found_face)
+        registerReceiver(qianfangBroadcastReceiver, myIntentFilter)
+    }
+
+
+    private fun initVoice() {
+        RobotASR.getInstance().setRecognitionListener(object : OnRecognizerListener {
+
+            override fun onSrcResult(result: String, isLast: Boolean) {
+
+            }
+
+            override fun onVolumeChanged(volume: Float) {
+
+            }
+
+            override fun onResult(recognizedResult: String) {
+                if (TextUtils.isEmpty(recognizedResult)) {
+                    return
+                }
+                showRecognitionResult("" + recognizedResult)
+            }
+
+            override fun onBeginOfSpeech() {
+            }
+
+            override fun onPartialResult(partialResult: String) {
+                if (TextUtils.isEmpty(partialResult)) {
+                    return
+                }
+                showRecognitionResult("" + partialResult)
+            }
+
+            override fun onEvent(eventType: Int, params: Bundle) {
+            }
+
+            override fun onEndOfSpeech() {
+            }
+
+            override fun onError(code: Int, msg: String?) {
+            }
+
+        })
+        onSynthesizerListener = object : OnSynthesizerListener() {
+            override fun onStart(text: String) {
+                super.onStart(text)
+            }
+
+            override fun onSpeak(text: String, percent: Int) {
+                super.onSpeak(text, percent)
+                showSpeakResult(("" + text).replace(RobotTTS.TIMEOUT_DELAYED, ""))
+            }
+
+            override fun onFinish(errorCode: Int, msg: String?) {
+            }
+        }
+        RobotTTS.getInstance().addOnSynthesizerListener(onSynthesizerListener)
+    }
+
+    val voiceHandler: Handler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            when (msg.what) {
+                VOICE_ASR_SHOW_TEXT -> {
+                    //说话是不显示识别结果
+                    if (RobotTTS.getInstance().isSpeaking) {
+                        return
+                    }
+                    //5s后隐藏
+                    removeMessages(VOICE_HIDE_TEXT)
+                    sendEmptyMessageDelayed(VOICE_HIDE_TEXT, 3000)
+                    a_expression_tv_hint.animate().cancel()
+                    a_expression_tv_hint.animate().setListener(null).alpha(0.5f).setDuration(150).start()
+                    a_expression_tv_hint.text = "识别到: " + (msg.obj)
+                }
+                VOICE_TTS_SHOW_TEXT -> {
+                    //5s后隐藏
+                    removeMessages(VOICE_HIDE_TEXT)
+                    sendEmptyMessageDelayed(VOICE_HIDE_TEXT, 3000)
+                    val text = "" + msg.obj
+                    if (a_expression_tv_hint.text.toString().equals(text)) {
+                        //内容相同, 无需再次显示, 防止影响动画
+                        return
+                    }
+                    if (a_expression_tv_hint.alpha != 0.5F) {
+                        a_expression_tv_hint.animate().cancel()
+                        a_expression_tv_hint.animate().setListener(null).alpha(0.5f).setDuration(150).start()
+                    }
+                    a_expression_tv_hint.text = text
+                }
+                VOICE_HIDE_TEXT -> {
+                    a_expression_tv_hint.animate().cancel()
+                    a_expression_tv_hint.animate().alpha(0F).setDuration(300).setListener(object : Animator.AnimatorListener {
+                        override fun onAnimationRepeat(animation: Animator?) {
+
+                        }
+
+                        override fun onAnimationEnd(animation: Animator?) {
+                            a_expression_tv_hint.text = ""
+                        }
+
+                        override fun onAnimationCancel(animation: Animator?) {
+                        }
+
+                        override fun onAnimationStart(animation: Animator?) {
+                        }
+
+                    }).start()
+                }
+            }
+        }
+    }
+
+
+    private fun showRecognitionResult(text: String) {
+        if (text.trim().length <= 1) return
+
+        val message = Message.obtain()
+        message.what = VOICE_ASR_SHOW_TEXT
+        message.obj = text
+        voiceHandler.removeMessages(VOICE_ASR_SHOW_TEXT)
+        voiceHandler.sendMessage(message)
+
+    }
+
+    private fun showSpeakResult(text: String) {
+        if (text.trim().isEmpty()) return
+        val message = Message.obtain()
+        message.what = VOICE_TTS_SHOW_TEXT
+        message.obj = text
+        voiceHandler.removeMessages(VOICE_TTS_SHOW_TEXT)
+        voiceHandler.sendMessage(message)
+    }
+
+
+    /**
+     * 摄像头最外面的调用处（滚动的Banner）
+     */
+    private fun initFaceFollow() {
+        a_expression_rffv.getCameraTextureView().setPreviewSize(320, 240)
+        a_expression_rffv.getCameraTextureView().setZoom(AppConfig.getCameraZoom())
+        a_expression_rffv.getCameraTextureView().setCameraId(AppConfig.getDeviceCameraFB(1))
+        a_expression_rffv.setRobotFollowMotion(object : RobotFollowFaceView.RobotFollowMotion {
+            var SCREENANGLE = -1F
+            var SCREENANGLE_HORIZONTAL = 100
+            var SCREENANGLE_VERTICAL = 70
+            override fun onScanFace() {
+                LLog.e("")
+            }
+
+            override fun onHeadTurnLeft(offsetScreenAtio: Float) {
+                LLog.e(offsetScreenAtio)
+                LLog.e("onHeadTurnLeft")
+                if (App.isXJB())
+                    XJBSDK.getInstance().headTurnLeft((SCREENANGLE_HORIZONTAL * Math.abs(offsetScreenAtio)).toInt())
+                LLog.e("onHeadTurnLeft.....")
+                makeScreenangle()
+                if (Math.abs((SCREENANGLE * offsetScreenAtio).toInt()) == 0) {
+                    return
+                }
+                Robot.getInstance().moveLeftLevel(Math.abs((SCREENANGLE * offsetScreenAtio).toInt()) + 1, 2, 0)
+            }
+
+            override fun onHeadTurnRight(offsetScreenAtio: Float) {
+                LLog.e("onHeadTurnRight")
+                if (App.isXJB())
+                    XJBSDK.getInstance().headTurnRight((SCREENANGLE_HORIZONTAL * Math.abs(offsetScreenAtio)).toInt())
+                LLog.e("onHeadTurnRight....")
+                LLog.e(offsetScreenAtio)
+                makeScreenangle()
+                if (Math.abs((SCREENANGLE * offsetScreenAtio).toInt()) == 0) {
+                    return
+                }
+                Robot.getInstance().moveRightLevel(Math.abs((SCREENANGLE * offsetScreenAtio).toInt()) + 1, 2, 0)
+            }
+
+            override fun oHeadTurnUp(offsetScreenAtio: Float) {
+                LLog.e("oHeadTurnUp")
+                LLog.e("oHeadTurnUp...")
+                makeScreenangle()
+                LLog.e(offsetScreenAtio)
+                if (Math.abs((SCREENANGLE * offsetScreenAtio).toInt()) == 0) {
+                    return
+                }
+            }
+
+            override fun onHeadTurnDown(offsetScreenAtio: Float) {
+                LLog.e("onHeadTurnDown")
+                LLog.e("onHeadTurnDown...")
+                LLog.e(offsetScreenAtio)
+                makeScreenangle()
+                if (Math.abs((SCREENANGLE * offsetScreenAtio).toInt()) == 0) {
+                    return
+                }
+            }
+
+            override fun onBodyTurnLeft(offsetScreenAtio: Float) {
+                LLog.e(offsetScreenAtio)
+                makeScreenangle()
+                if (Math.abs((SCREENANGLE * offsetScreenAtio).toInt()) == 0) {
+                    return
+                }
+                Robot.getInstance().moveLeftLevel(Math.abs((SCREENANGLE * offsetScreenAtio).toInt()) + 1, 3, 0)
+            }
+
+            override fun onBodyTurnRight(offsetScreenAtio: Float) {
+                LLog.e(offsetScreenAtio)
+                makeScreenangle()
+                if (Math.abs((SCREENANGLE * offsetScreenAtio).toInt()) == 0) {
+                    return
+                }
+                Robot.getInstance().moveRightLevel(Math.abs(((SCREENANGLE * offsetScreenAtio).toInt())) + 1, 3, 0)
+            }
+
+            var lastZoom = 0
+
+            private fun makeScreenangle() {
+                if (SCREENANGLE != -1F && lastZoom == a_expression_rffv.cameraTextureView.zoom) return
+
+                var zoomAtio = 1F
+                val zoom = a_expression_rffv.cameraTextureView.zoom
+                val maxZoom = a_expression_rffv.cameraTextureView.maxZoom
+                if (zoom > 0 && maxZoom > 0) {
+                    zoomAtio = (maxZoom - zoom) * 1F / maxZoom
+                }
+                SCREENANGLE = 60F / 2 * zoomAtio
+                lastZoom = zoom
+            }
+
+            override fun onBodyTurnBack(offsetScreenAtio: Float) {
+                LLog.e(offsetScreenAtio)
+            }
+
+            override fun onBodyTurnForward(offsetScreenAtio: Float) {
+
+                LLog.e(offsetScreenAtio)
+            }
+
+            override fun onYawStand() {
+                LLog.e("onYawStand")
+                if (App.isXJB())
+                    XJBSDK.getInstance().yawStand()
+            }
+
+            override fun onPitchStand() {
+                LLog.e("onPitchStand")
+                if (App.isXJB())
+                    XJBSDK.getInstance().pitchStand()
+            }
+        })
+        a_expression_rffv.setOnClickListener { v -> a_expression_rffv.cameraTextureView.autoFocus() }
+    }
+
+    internal inner class satrt : PagerAdapter() {
+        override fun getCount(): Int {
+            return 10000
+        }
+
+        override fun isViewFromObject(arg0: View, arg1: Any): Boolean {
+            return arg0 === arg1
+        }
+
+        override fun destroyItem(container: ViewGroup, position: Int, `object1`: Any) {
+            container.removeView(object1 as View)
+        }
+
+        override fun instantiateItem(container: ViewGroup, position: Int): Any {
+            try {
+                container.addView(view_lis.get(position % view_lis.size))
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            return view_lis.get(position % view_lis.size)
+
+        }
+    }
+
+}

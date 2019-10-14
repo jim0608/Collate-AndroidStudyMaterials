@@ -1,0 +1,7 @@
+#区别
+1.AndroidX本质上其实就是对Android Support Library进行的一次升级，
+2.Android Support Library，用于提供向下兼容的功能。比如我们每个人都熟知的support-v4库，appcompat-v7库都是属于Android Support Library的
+	-4在这里指的是Android API版本号，对应的系统版本是1.6。那么support-v4的意思就是这个库中提供的API会向下兼容到Android 1.6系统。
+	-类似地，appcompat-v7指的是将库中提供的API向下兼容至API 7，也就是Android 2.1系统。它对应的包名如下：
+#AndroidX出现原因：1.6,2.1系统距今太遥远了，现在最低版系统普遍是4.0.1等，API对应15，supportV4、supportV7不在支持那么久远的系统了但是名字是一直保留下来了的
+		

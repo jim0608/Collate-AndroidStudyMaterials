@@ -1,0 +1,8 @@
+1.在A_activity中跳转到B_activity中，且需要获取onActivityResult用：
+	startActivityForResult(new Intent(A,B.class), CELL_RESULT);
+
+2.在Fragment跳转到activity中且在Fragment需要获取onActivityResult用：
+	startActivityForResult(new Intent(getActivity,B.class), CELL_RESULT);（ps：StartActivityResult之前不要带getActivity/getContext。。。）
+
+3.在Fragment跳转到activity中且在Fragment所在的activity中需要获取onActivityResult用：
+	getActivity.startActivityForResult(new Intent(getActivity,B.class), CELL_RESULT);（ps：StartActivityResult之前不要带getActivity/getContext。。。）

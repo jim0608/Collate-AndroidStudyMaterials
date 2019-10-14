@@ -1,0 +1,27 @@
+*/*/MVP在Android中的使用：https://blog.csdn.net/xq_sq/article/details/79797340：介绍了MVC、MVP的优点与缺点；详细介绍了MVP各个层级的相关信息
+
+**MVP：相对于MVC节藕性更强，(自我感觉：复用性更强，代码整洁性更好)
+
+*M层（model）：实体模型，同样对应着Bean实体类主要提供数据的存取的功能，Present需要通过Model层来存储和或者获取数据
+			从网络，数据库，文件，传感器，第三方等数据源读写数据。 
+			对外部的数据类型进行解析转换为APP内部数据交由上层处理。 
+			对数据的临时存储,管理，协调上层数据请求。
+
+*V层(view)：负责处理用户事件交互和视图部分的展示，在Android中它可以使Activity和Fragment或者是某个View控件
+			提供与使用者UI交互，页面的展示、隐藏等各种UI的改变通过与Present层交互实现（将变化的业务放在present中，变化的实现放在View层中）
+			提供UI交互 
+			在presenter的控制下修改UI。 
+			将业务事件交由presenter处理。 
+			注意: View层不存储数据，不与Model层交互。View和Presenter通过接口进行交互 面向接口编程
+
+*P层(present)：作为View与Model交互的中间纽带，处理与用户交互的负责逻辑。它还从Model中去获取数据然后返回给View,使得Model和View没有耦合。
+
+*MVP的核心思想
+	MVP 把 Activity 中的 UI 逻辑抽象成 View 接口，把业务逻辑抽象成 Presenter 接口，Model 类还是原来的 Model。这就是 MVP 模式，现在这样的话，Activity 的工作的简单了，只用来响应生命周期，其他工作都丢到 Presenter 中去完成。从上图可以看出，Presenter 是 Model 和 View 之间的桥梁，为了让结构变得更加简单，View 并不能直接对 Model 进行操作，这也是 MVP 与 MVC 最大的不同之处。
+
+*使用 MVP，至少需要经历以下步骤：
+创建 IPresenter 接口，把所有业务逻辑的接口都放在这里，并创建它的实现PresenterCompl（在这里可以方便地查看业务功能，由于接口可以有多种实现所以也方便写单元测试）创建 IView 接口，把所有视图逻辑的接口都放在这里，其实现类是当前的 Activity/Fragment。Activity 里包含了一个 IPresenter，而 PresenterCompl 里又包含了一个 IView 并且依赖了 Model。Activity 只保留对 IPresenter 的调用，其它工作全部留到 PresenterCompl 中实现。Model 并不是必须有的，但是一定会有 View 和 Presenter。
+
+自我思考：在View层implements Iview接口，并且在Iview接口中写入需要在View层实现的UI功能变化；并且在View层中实现present层，present=newPresent();
+		在Present层implements Ipresent接口，其中Ipresent extend BasePresent层，实现View层弱应用，View层业务逻辑放在这一层处理
+		在model层中，多用于对数据处理，如将服务器、数据库、等缓存数据放在这一层处理
