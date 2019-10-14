@@ -100,3 +100,39 @@ private fun hideFragment(transaction: FragmentTransaction) {
 }
 ```
 supportFragmentManager.popBackStack()//移除回退栈顶部Fragment
+
+======================================================================================
+#关于Fragment 构造函数的问题 
+##为什么在Fragment里边写构造函数要加 “@SuppressLint("ValidFragment")”  
+如果说不能通过构造函数来传值，还有别的方法可以在Activity和Fragment之间传递数值吗？
+    -Activity里通过setArguments传值,Fragment里通过getArguments获取值
+    ```
+    //在MyActivity中有一个MyFragment
+    MyFragment myFragment = new MyFragment();
+    Bundle bundle = new Bundle();
+    bundle.putString("Data",value);
+    myFragment.setArgument(bundle);
+
+    ```
+
+========================================================================================
+#Fragment 与Activity之间传递数据（https://blog.csdn.net/qq_34115167/article/details/80496744）
+    ```
+    //在fragment中
+    //这是最重要的代码，目的就是为接口赋值，使其不为空
+        @Override
+        public void onAttach(Context context) {
+            super.onAttach(context);
+            Log.v(TAG, "--------onAttach");
+            //Fragment attach到Activity时，将Activity强转为Callbacks保存
+            if (context instanceof InfoCallback) {//如果宿主Activity实现了该接口
+                infoCallback = (InfoCallback) context; //infoCallback 指向该Activity
+            } else {
+                throw new RuntimeException(context.toString()
+                        + " must implement OnFragmentInteractionListener");
+            }
+        }
+    ````
+
+
+#Fragment 中发现问题
