@@ -1,8 +1,17 @@
 #好的开源库：（https://github.com/wasabeef/awesome-android-ui）
 -List of Android UI/UX Libraries
 
-#快速获取SHA1、MD5
-https://www.jianshu.com/p/49e70c51c87f
+#快速获取签名SHA1、MD5（https://www.jianshu.com/p/49e70c51c87f）
+***获取应用jks签名
+-在AndroidStudio的右侧栏打开Gradle然后依次点击app->Tasks->android->signingReport,点击signingReport之后就会在AS底部弹出MD5、SHA1。。。等等等，你的签名信息，这是获取签名最简单方法，你也可以用微信获取签名的工具以及网上通过adb命令去测试一下是否准确
+***通过keystore获取应用签名：打开cmd，在C:\Users\Administrator 目录下跳转到（.android）文件下，输入keytool -list -v -keystore D:\Project\Android\DYS_HPV\dys_hpv (D:\Project\Android\DYS_HPV\dys_hpv是你应用程序的签名文件，当你输入完成后，输入密码，你的签名文件密码，也就是打正式包的密码)
+***通过keystore获取应用签名：打开cmd，在C:\Users\Administrator 目录下跳转到（.android）文件下，输入keytool -list -v -keystore debug.keystory
+这是Android自动生成的一个测试签名文件，当你的应用需要正式发版时，会自己创建一个签名，当你需要在线上使用签名时则需要使用正式签名文件的签名
+Keytool  -list  -v  -keystore  <签名文件路径>
+***在AndroidStudio中打开Terminal，在当前App的目录下输入keytool -list -v -keystore D:\Project\Android\DYS_HPV\dys_hpv (D:\Project\Android\DYS_HPV\dys_hpv是你应用程序的签名文件，当你输入完成后，输入密码，你的签名文件密码，也就是打正式包的密码)
+***微信获取签名工具：https://developers.weixin.qq.com/doc/oplatform/Downloads/Android_Resource.html
+***Android获取应用签名（开发版SHA1和发布版SHA1）（https://blog.csdn.net/ShenQiXiaYang/article/details/83416232）
+
 
 #用adb命令抓取log到本地电脑中（https://www.jianshu.com/p/e5eb85030c08?utm_campaign）
 
@@ -16,4 +25,5 @@ https://www.jianshu.com/p/49e70c51c87f
 
 #Android5.0之后，锁屏30分钟之后手机会断开网络
 
-1.
+#进程保活：使用前台service保活
+
