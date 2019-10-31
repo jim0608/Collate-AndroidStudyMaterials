@@ -1,0 +1,21 @@
+# 配置自己的Linux系统服务器
+1.首先购买一个个服务器根据该网址步骤开始：(阿里云ECS建网站（建站）超详细全套完整图文教程！菜鸟必看！)[https://www.jianshu.com/p/2604e53a7f6a?from=singlemessage]
+2.配置过程中的问题
+	- 解压jdk文件：sudo tar zxvf /usr/java/jdk/jdk-8u231-linux-x64.tar.gz（直接到改文件位置解压jdk文件）
+	- vi /etc/profil：配置Java环境，配置完成后输入“：wq”结束并保存，输入source /etc/profile：使环境变量设置立即生效
+	- 输入java -version 出现以下错误,(解决办法)[https://www.centos.bz/2018/06/%E5%9C%A8ubuntu-18-04%E4%B8%8A%E4%BD%BF%E7%94%A8apt%E5%AE%89%E8%A3%85java/]
+		+首先输入sudo apt update，然后输入sudo apt install default-jre安装OpenJDK：
+	```
+	Command 'java' not found, but can be installed with:
+
+	apt install default-jre            
+	apt install openjdk-11-jre-headless
+	apt install openjdk-8-jre-headless 
+	```	
+#set java environment
+export JAVA_HOME=/root/jdk1.8.0_231
+export JRE_HOME=/root/jdk1.8.0_231/jre
+export CLASSPATH=.:$JAVA_HOME/lib:$JRE_HOME/lib:$CLASSPATH
+export PATH=$JAVA_HOME/bin:$JRE_HOME/bin:$JAVA_HOME:$PATH
+
+221.10.251.197
