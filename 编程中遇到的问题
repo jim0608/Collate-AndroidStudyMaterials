@@ -22,3 +22,9 @@
 7.What went wrong: Execution failed for task 'XXX:compileDebugJavaWithJavac'. Compilation failed; see the compiler error output for details.
 -通过百度：并尝试，这次解决了这个问题，原因是gradle版本不对或者默认的classpath 'com.android.tools.build:gradle:3.1.2 下载的数据有丢包
 ：解决方法：在as中的setting中的gradle选择本地下载的gradle-4.4，rebuild一次就好了，
+
+
+8.图片加载导致OOM：内存溢出：
+	Android中加载大图长图，明明图的大小通常不过几百K大一点的也就几M，为什么很容易出现OOM？
+	因为将一个图片加载到内存中与图片实际大小无关，而是与图片的像素和颜色类型，如：
+		以ARGB_8888这种颜色类型的举例，它的每个像素点占用4个字节，假如现在我们有一张高清图，像素是4096*2160，那么这张图加载到内存时就会占用的内存为4096*2160*4字节，换算下来为33.75M
