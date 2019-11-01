@@ -26,3 +26,6 @@
 			版权声明：本文为CSDN博主「Json森」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
 			原文链接：https://blog.csdn.net/tinson12321/article/details/81627070
 			```
+
+5.在退出登录时需要清除LocalStorage中数据[https://www.jianshu.com/p/33313b2030ab]
+ - WebStorage.getInstance().deleteAllData()
