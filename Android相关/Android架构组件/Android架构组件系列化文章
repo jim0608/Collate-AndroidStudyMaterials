@@ -5,3 +5,6 @@
 （四）LiveData(https://www.jianshu.com/p/d4f5bb4a9234)
 （五）ViewModel(https://www.jianshu.com/p/bbb570716ad3)
 （六）Room持久化库(https://www.jianshu.com/p/ef7cbf7c12b1)
+
+# DataBinding初使用感受
+- 他并没有对编程效率提升多少，只是将对页面控件之间的显示放在了xml中单独处理，我还未感受到他放在xml中对提升编程效率方面的优势

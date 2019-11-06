@@ -1,0 +1,21 @@
+# 配置android打包的签名
+ 1.在App的Gradle中配置
+ signingConfigs{
+        debug{
+            keyAlias "note"//签名时使用的密钥别名
+            keyPassword "notetext"//别名的密码
+            storeFile file("D:/Androidproject/NoteText/note.jks")//注意这，一定是file("...")，存储签名时使用的文件
+            storePassword "notetext"//仓库密码
+            v1SigningEnabled true//是否加载V1包
+            v2SigningEnabled true
+        }
+        release{
+            keyAlias "note"
+            keyPassword "notetext"
+            storeFile file("D:/Androidproject/NoteText/note.jks")
+            storePassword "notetext"
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
+    2.还要注意在buildtypes中的各个对应的环境下配置signingConfig signingConfigs.release
