@@ -28,3 +28,12 @@
 	2.by lazy{}放在要修饰常量的类型后面，如：val test：String by lazy{}
 	3.by lazy{}在第一次调用时初始化括号里面数据，括号内最下方的一行为最终的赋值，以后调用该常量得到的值都是括号内的最后一个值
 	4.by lazy本身是一种属性委托。属性委托的关键字是by。
+
+# Java中代码常使用方式转Kotlin
+- Java：new InputFilter[]{new InputFilter.LengthFilter(maxLength)}
+- Kotlin:arrayof<InputFilter>(InputFilter.lengthFilter(maxLength))
+
+# Kotlin Toast扩展函数
+	1.fun Context.mContextToast(msg:String?,length:Int = Toast.LENGTH_SHORT) = Toast.makeText(this,msg,length).show()
+	2.fun mAppToast(msg:String?,length:Int = Toast.LENGTH_SHORT) = Toast.makeText(App.getContext(),msg,length).show()
+这里面“1”只能在Activity层中使用，2，必须在Application中定义context
