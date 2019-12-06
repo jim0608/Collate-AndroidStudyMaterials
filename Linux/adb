@@ -34,3 +34,4 @@ adb uninstall com.dayishi.dayizhihui.drugstore
 
 # 使用adb在命令提示符实时打印日志：adb logcat |find "包名" 
 
+{"city_name":"","clerk_id":"a0652daebbox6015a89977d1afdfdfad","clerk_type":2,"id":"5d1f002f613642d4b1720c527970bbf2","image_illumination":"http://file.dyzhkj.cn/reader/1574850120759N8kdtIwx_camera_1574826605409.jpg","introduction":"v，，vv，","sex":0,"app_id":"6015","cj_type":0,"token":"TOKEN","user_id":"USER_ID"}

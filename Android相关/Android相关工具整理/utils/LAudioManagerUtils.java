@@ -11,6 +11,24 @@ import com.socks.library.KLog;
  */
 
 public class LAudioManagerUtils {
+
+     //开始语音呼叫
+    fun startAudioCall() {
+        //设置通话音量为最大音量
+        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        if (am != null) {
+            val max = am.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL)
+            val current = am.getStreamVolume(AudioManager.STREAM_VOICE_CALL)
+            ALog.i("mAudioManager", "max : $max\t\tcurrent : $current")
+            am.isSpeakerphoneOn = false
+            // 设置此值可在拨打时控制响铃音量
+            am.mode = AudioManager.MODE_IN_COMMUNICATION
+            // 设置拨打时响铃音量默认值
+            am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 15, AudioManager.STREAM_VOICE_CALL)
+            ALog.i("mAudioManager", "max : $max\t\tcurrent : $current")
+        }
+
+    }
     /**
      * 增大音量
      *

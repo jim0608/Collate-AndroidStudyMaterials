@@ -1,0 +1,21 @@
+# 图片选择
+implementation 'me.iwf.photopicker:PhotoPicker:0.9.12@aar'
+注意：在TouchImageView中,使用android:layout_gravity="center"会导致图片点击放大时无法向上扩展
+
+        <FrameLayout
+            android:id="@+id/fragment_dialog"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"//只有当宽高都为match的时候才可以全局扩展
+            android:background="@android:color/transparent">
+
+            <!--注意在这种情况下，在TouchImageView中,使用android:layout_gravity="center"会导致图片无法展示出来-->
+            <me.iwf.photopicker.widget.TouchImageView
+                android:id="@+id/touch_out_send_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent" />
+            
+        </FrameLayout>
+    </FrameLayout>
+
+   
