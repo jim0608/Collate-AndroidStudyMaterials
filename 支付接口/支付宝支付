@@ -1,0 +1,29 @@
+#支付宝支付
+	Android接入api官方：https://docs.open.alipay.com/204/105051/
+##有用的博客：https://blog.csdn.net/weixin_41063209/article/details/81775507
+
+#支付宝接入时出现问题：订单参数异常,请重新下单后再发起付款(ALIN42273)
+	-解决方法[订单中传入了expireTime且该参数对应的值早于请求时间，故创建失败。](https://blog.csdn.net/lilinoscar/article/details/84349073)
+	 +其实就是说创建订单时，设置了过期超时时间，请求时间和过期时间一样了，所以创建订单会失败，除非手速或者网络快，正好在未过期前支付了。
+	 +解决方案：登录服务器，查看一下服务本地时间，你就会发现竟然慢了几分钟，甚至十几分钟。
+
+
+#[无效的appid排查方案](https://blog.csdn.net/sinat_32575213/article/details/79651110)
+
+---
+#支付宝混淆规则（.aar）版本
+- 新版本的APP支付导入支付宝SDK并配置就可以 
+   +新版本的APP支付不需要再配置混淆的建议使用这里的AAR的包：https://docs.open.alipay.com/54/104509 按照这里：https://docs.open.alipay.com/204/105296/ 
+-旧版本（.jar(lib包)）版本
+	+在商户应用工程的proguard-project.txt里添加以下相关规则：
+   +{
+    -libraryjars libs/alipaySDK-20150602.jar
+	-keep class com.alipay.android.app.IAlixPay{*;}
+	-keep class com.alipay.android.app.IAlixPay$Stub{*;}
+	-keep class com.alipay.android.app.IRemoteServiceCallback{*;}
+	-keep class com.alipay.android.app.IRemoteServiceCallback$Stub{*;}
+	-keep class com.alipay.sdk.app.PayTask{ public *;}
+	-keep class com.alipay.sdk.app.AuthTask{ public *;}
+	}至此，开发包开发资源导入完成。
+
+{resultStatus=9000, result={"alipay_trade_app_pay_response":{"code":"10000","msg":"Success","app_id":"2016091500518622","auth_app_id":"2016091500518622","charset":"utf-8","timestamp":"2019-04-22 15:40:30","out_trade_no":"1523714442123-8740","total_amount":"0.01","trade_no":"2019042222001487661000045110","seller_id":"2088102175771982"},"sign":"XSQBkMa2R2lF2QcudNlVn5ADyougSy8kbxeUTYPjT6kSzYAPz0Kr41SMUkEPzsP61f+DF/Pp7Dys2Gg0kDO144Cx/hkI7QA1KoYXtSJRA9HFoTr7Cs31EVTzFJ5/d5sQp3v5tnm02ZNNCVzWP+Q6xFxLtqs4F3mWyzccCmIVh74jnNqxDFwdTIowsEnKHI/aF6OodyjK90yxCbyQGKolJEsfGHfxdkjOj/OSgGhUUrs/vYwit1VcpKqsLEesowTkqkBg6zwAzGzlOVMkRuiWqGqtsliKOBiUIP5ER7eta0N298/+3ogdJ8pWEo97PUxwx1flG6B+6d/AgjZgx5+ceA==","sign_type":"RSA2"}, memo=}

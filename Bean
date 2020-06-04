@@ -1,0 +1,3 @@
+#bean传输数据时注意事项
+通过Result result = newResult（）；传递数据时防线明明在其中未给一些int对象赋值但还是会出现，如：num=0；
+这种情况是因为int型不能为null，如果你不给他赋值他就会自动等于0；所以一般使用它设置为Integer，int型包含于Integer包中，而Integer可以为null

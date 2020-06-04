@@ -1,0 +1,63 @@
+#Gson字符串数组转成List对象（含泛型操作）
+-https://www.jianshu.com/p/701ae370f959
+-如一下数据：
+```
+[
+    {
+        "author": "zhaoxa",
+        "name": "如何入门android",
+        "price": 100
+    },
+    {
+        "author": "zhaoxa2",
+        "name": "如何入门android2",
+        "price": 76
+    },
+    {
+        "author": "zhaoxa3",
+        "name": "如何入门android3",
+        "price": 99
+    },
+    {
+        "author": "zhaoxa4",
+        "name": "如何入门android4",
+        "price": 48
+    }
+]
+```
+-使用方法1.：
+```
+public <T> List<T> parseString2List(String json,Class clazz) {
+        Type type = new ParameterizedTypeImpl(clazz);
+        List<T> list =  new Gson().fromJson(json, type);
+        return list;
+    }
+
+    private  class ParameterizedTypeImpl implements ParameterizedType {
+        Class clazz;
+        
+        public ParameterizedTypeImpl(Class clz) {
+            clazz = clz;
+        }
+
+        @Override
+        public Type[] getActualTypeArguments() {
+            return new Type[]{clazz};
+        }
+
+        @Override
+        public Type getRawType() {
+            return List.class;
+        }
+
+        @Override
+        public Type getOwnerType() {
+            return null;
+        }
+    }
+    ```
+使用方法2：
+```
+val turnsType = object : TypeToken<List<Turns>>(){}.type
+val turns = Gson().fromJson<List<Turns>>(pref.turns, turnsType) //解析
+``` 

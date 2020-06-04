@@ -1,0 +1,14 @@
+#[自定义View之继承LinearLayout](https://blog.csdn.net/qq_33445600/article/details/72832237)
+1.前面描述了自定义View与半自定义View的区别
+
+#半自定义View
+1.半自定义View指的是，view继承LinearLayout（或RelateLayout、FrameLayout等等）
+ -半自定义View时，在初始化所定义的Xml布局时在[inflate(@LayoutRes int resource, @Nullable ViewGroup root) ]中的root传this，如：
+ ```
+ LayoutInflater.from(context).inflate(R.layout.item_calldoc_drugsinfo_layout,this)//使用this时才绑定了该自定义的布局
+ Button btn = findViewById(R.id.actv_calldoc_drugs_inputname)
+ ```
+2.[自定义控件之 - 自定义LinearLayout控件](https://blog.csdn.net/amoscxy/article/details/80151114)
+	-这个网页中讲的就是半自定义View（继承LinearLayout）
+
+#

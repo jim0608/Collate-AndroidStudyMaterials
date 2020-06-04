@@ -1,0 +1,63 @@
+#[优雅的添加Fragment](https://blog.csdn.net/ljd2038/article/details/79680515]
+```
+FragmentManager manager = getSupportFragmentManager();
+FragmentTransaction transaction = manager.beginTransaction();
+transaction.add(frameId, fragment);
+transaction.commit();
+```
+-为了避免大量的重复书写上面那段代码，通常会创建一个ActivityUtil的类，在这个类中写一个static方法来封装上面那段代码。
+```
+public static void addFragmentToActivity(FragmentManager manager, Fragment fragment, int frameId) {
+
+    FragmentTransaction transaction = manager.beginTransaction();
+    transaction.add(frameId, fragment);
+    transaction.commit();
+
+}
+```
+这时候在Activity当中便能够直接使用上面的方法：
+
+ActivityUtil.addFragmentToActivity(
+        getSupportFragmentManager(), fragment, R.id.frag_container);
+
+
+#使用Kotlin實現fragment
+1.fragment中的（Transaction）事务，每次执行fragment的add或show或hide时，需要开启一个事务（Transaction）但是每次fragment动作最好只开启一个事务运行
+	-如：对fragment add/show时需要hide ，则hide使用的事务（Transaction）与add/show保持一致
+	-使用fragment是出现问题，在对fragment添加进栈时一直无法成功，
+	-问题情形：1.在最后一个fragment点击返回时无法返回上一个fragment，会卡住一会再次点击返回就会回到上一个activity（原因：开启了多个事务（Transaction）如：add/show的commit事务后,hide(fragment)新建了一个事务commit了）
+			2.在第一个fragment点击返回时，会回到一个空白页，再次点击才会回到上一个activity（原因：将第一个fragment添加进回退栈了，在回退栈管理时，第一个fragment不执行addToBackStack）
+	
+```
+ //对数据判断控制显影
+    private fun switchFragment(fragment: Fragment) {
+        if (!fragment.isAdded){
+            addFragment(fragment)
+        }else{
+            show(fragment)
+        }
+        lastFragment = fragment
+    }
+
+    fun FragmentActivity.replaceFragment(fragment: Fragment, frameId: Int) {
+        supportFragmentManager.inTransaction { replace(frameId, fragment) }
+    }
+  
+    fun FragmentActivity.addFragment(fragment: Fragment) {
+        supportFragmentManager.inTransaction { add(R.id.frame_modify_userInfo, fragment) }
+    }
+
+    fun FragmentActivity.show(frament: Fragment) {//这种方法，show执行了 beginTransaction().hide(lastFragment).addToBackStack(null).func().commit()，也添加进栈了
+        supportFragmentManager.inTransaction { show(frament) }
+    }
+
+    //将传入的Lambda函数添加一个返回值，返回FragmentTransaction对象。这样会使得我们的代码更加简洁。
+    inline fun FragmentManager.inTransaction(func: FragmentTransaction.() -> FragmentTransaction) {
+        if (lastFragment!=null){//如果上一個fragment不为空，隐藏上一个fragment并将当前fragment添加进回退栈
+            beginTransaction().hide(lastFragment).addToBackStack(null).func().commit()
+        }else{//如果当前fragment为第一个fragment，泽 第一个fragment不添加进栈，并且不执行hide
+            beginTransaction().func().commit()
+        }
+
+    }
+```

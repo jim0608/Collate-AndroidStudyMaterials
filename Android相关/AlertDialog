@@ -1,0 +1,11 @@
+1.使用AlertDialog时，有需求需要Dialog为圆角，，使用CardView设置为圆角，但是每个角落出现白边，这时需要设置背景为透明
+   * AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        alertDialog = builder.create();
+        view = LayoutInflater.from(context).inflate(getLayoutId(), null);
+        alertDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        alertDialog.setView(view);
+        initViews(view);
+
+2. //关于Android8.0 浮悬框适配问题的解决方案
+	(1) 【https://blog.csdn.net/u013651405/article/details/79350857】
+	(2) https://www.jianshu.com/p/e0e9dbd8799f(通过getApplicationContext()返回的context创建一个Dialog)

@@ -1,0 +1,95 @@
+#
+---
+如果所用的Glide版本过高需要使用下面的文件
+、、、
+
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.widget.ImageView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
+import com.bumptech.glide.request.RequestOptions;
+import com.zhihu.matisse.engine.ImageEngine;
+
+public class GlideLoadEngine implements ImageEngine {
+
+    /**
+     * Load thumbnail of a static image resource.
+     *
+     * @param context     Context
+     * @param resize      Desired size of the origin image
+     * @param placeholder Placeholder drawable when image is not loaded yet
+     * @param imageView   ImageView widget
+     * @param uri         Uri of the loaded image
+     */
+    @Override
+    public void loadThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView, Uri uri) {
+        Glide.with(context)
+                .asBitmap() // some .jpeg files are actually gif
+                .load(uri)
+                .apply(new RequestOptions()
+                        .override(resize, resize)
+                        .placeholder(placeholder)
+                        .centerCrop())
+                .into(imageView);
+    }
+
+    @Override
+    public void loadGifThumbnail(Context context, int resize, Drawable placeholder, ImageView imageView,
+                                 Uri uri) {
+        Glide.with(context)
+                .asBitmap() // some .jpeg files are actually gif
+                .load(uri)
+                .apply(new RequestOptions()
+                        .override(resize, resize)
+                        .placeholder(placeholder)
+                        .centerCrop())
+                .into(imageView);
+    }
+
+    @Override
+    public void loadImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
+        Glide.with(context)
+                .load(uri)
+                .apply(new RequestOptions()
+                        .override(resizeX, resizeY)
+                        .priority(Priority.HIGH)
+                        .fitCenter())
+                .into(imageView);
+    }
+
+    @Override
+    public void loadGifImage(Context context, int resizeX, int resizeY, ImageView imageView, Uri uri) {
+        Glide.with(context)
+                .asGif()
+                .load(uri)
+                .apply(new RequestOptions()
+                        .override(resizeX, resizeY)
+                        .priority(Priority.HIGH)
+                        .fitCenter())
+                .into(imageView);
+    }
+
+    @Override
+    public boolean supportAnimatedGif() {
+        return true;
+    }
+}
+、、、
+
+Matisse使用方法：
+ Matisse.from((Activity) context)
+                .choose(MimeType.ofImage())//图片类型
+                .countable(true)//true:选中后显示数字;false:选中后显示对号
+                .maxSelectable(4 - imgList.size())//可选的最大数
+                .capture(true)//选择照片时，是否显示拍照
+                //参数1 true表示拍照存储在共有目录，false表示存储在私有目录；参数2与 AndroidManifest中authorities值相同，用于适配7.0系统 必须设置
+                .captureStrategy(new CaptureStrategy(true, "com.dayizhihui.dayishi.member.FileProvider"))
+                .imageEngine(new GlideLoadEngine())//图片加载引擎
+                .forResult(0);
+                
+
+    //matisse图片视频选择框架
+#依赖：implementation 'com.zhihu.android:matisse:0.5.2-beta3'

@@ -1,0 +1,25 @@
+# (Kotlin Coroutine（协同程序）原理解析)[https://www.jianshu.com/p/06703abc56b1]
+1.Kotlin Coroutine 是基于 Callback 机制。
+2.通过讲解Kotlin Coroutine suspending相关知识分析Kotlin协程是如何使用及其运行规则
+ 如：
+ ```
+ suspend fun postItem(item: Item): PostResult {
+  val token = requestToken()
+  val post = createPost(token, item)
+  val postResult = processPost(post)
+  return postResult
+}
+```
+# (Kotlin中协程封装与取消)[https://www.jianshu.com/p/726585a75e87]
+	1. 将java中的回调接口封装成挂起函数
+		- 因为Call的扩展函数await()是个挂起函数，所以必须运行在协程或者其他的挂起函数中
+		对OkHttp的Call类继续扩展，添加一个await()函数，函数的返回值为 String类型，在函数中使用挂起函数suspendCoroutine{}或suspendCancellableCoroutine{}，await()函数调用时，首先会挂起当前协程，然后执行enqueue将网络请求放入队列中，当请求成功时，通过block.resume(response.body()!!.string())来恢复之前的协程。
+		suspendCancellableCoroutine{}函数实现功能的函数：
+		delay()函数
+		yield()函数：挂起当前协程，然后将协程分发到 Dispatcher 的队列，这样可以让该协程所在线程或线程池可以运行其他协程逻辑，然后在 Dispatcher 空闲的时候继续执行原来协程。简单的来说就是让出自己的执行权，给其他协程使用，当其他协程执行完成或也让出执行权时，一开始的协程可以恢复继续运行
+	2. 父子协程
+		- 协程间父子关系有三种影响：
+		父协程手动调用cancel()或者异常结束，会立即取消它的所有子协程。
+		父协程必须等待所有子协程完成（处于完成或者取消状态）才能完成。
+		子协程抛出未捕获的异常时，默认情况下会取消其父协程。
+

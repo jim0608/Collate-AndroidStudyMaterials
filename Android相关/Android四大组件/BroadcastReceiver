@@ -1,0 +1,13 @@
+#代码中注册广播：
+//定义广播
+private void broadcast = new BroadcastRecevier(){
+	public void Recevier(Context context,Intent intent){
+	//自定义接收到消息后，处理的内容
+	}
+}
+//注册
+IntentFilter intentFilter = new IntentFilter();
+intentFilter.addAction("THIS_IS_BROADCAST");
+registerReceiver（broadcast,intentFilter）
+//在onDestroy（）时要注销广播
+unregisterReceiver(broadcast)

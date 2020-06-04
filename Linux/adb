@@ -1,0 +1,36 @@
+#将手机的文件或图片拿出到电脑中
+D:\Logcat> adb pull /sdcard/Android/data/com.dayishi.dayizhihui.drugstore/cache/prescription_1565073824210.jpg
+首先在命令控制面板跳转到你想保存的位置，然后 输入adb pull +（你想拿出来的文件）
+
+# 长期抓取日志
+adb shell logcat -v time >restart.log
+
+# adb 启动应用
+1. adb shell //连接
+2. pm list packages //找到包名
+3. monkey -p {包名} -c android.intent.category.LAUNCHER --pct-syskeys 0 -v 1   //启动程序
+
+# 安装apk
+adb install -r DrugStore_gold_v1.1.6(19)_20190612.apk
+# 卸载apk
+adb uninstall com.dayishi.dayizhihui.drugstore
+
+#（adb常用命令）[https://www.jianshu.com/p/ca06a4d1447b]
+
+在填写订单界面的优惠券返回时会直接调用Activity finish
+
+
+# 使用adb命令无线连接手机
+1.使用数据线连接上手机，
+2.输入adb devices,查看当前已连接电脑的设备，如果手机通过数据线正常连接，可以看到“4eac1f50        device”（这是我的手机）
+3.输入adb tcpip [不以0开头的端口号，如：adb tcpip 1234]
+4.输入adb connect [你的手机ip：端口号，如：adb connect 192.168.0.1:1234]
+5.方法同第二步，查看当前已连接设备，可以看到多出一台你输入的手机的IP“192.168.0.1:1234      device”
+6.这时你的手机就已经可以无线连接你的电脑了
+7.断开连接 adb disconnect 192.168.0.1:1234
+
+我手机IP及端口号：adb connect 192.168.0.188:1206
+
+# 使用adb在命令提示符实时打印日志：adb logcat |find "包名" 
+使用限定词，过滤日志adb shell "logcat | grep  MyApp"
+

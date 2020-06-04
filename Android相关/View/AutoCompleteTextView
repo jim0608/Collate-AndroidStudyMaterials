@@ -1,0 +1,49 @@
+#AutoCompleteTextView(自动完成文本框)【https://www.jianshu.com/p/8b91cc1c0fd4】
+1.该控件可以和adapter搭配形成输入文字弹出文本框类似于springbanner
+2.在做这种需求时(在文本框输入文字，文本框下方弹出与该文字相关的搜索信息)可以用
+
+Kotlin语言adapter
+```
+class DrugsSearchAdapter : ArrayAdapter<AddHempDrugsResponse> {
+    private var drugsList: MutableList<AddHempDrugsResponse>? = null
+
+    constructor(context: Context?, resource: Int, objects: MutableList<AddHempDrugsResponse>?) : super(context, resource, objects){
+        this.drugsList = objects
+    }
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+        val view: View
+
+        if (convertView == null) {
+            view = LayoutInflater.from(context).inflate(R.layout.item_drugs_search, parent, false)
+        } else {
+            view = convertView
+        }
+        val tv_name: TextView = view.findViewById(R.id.i_drugs_search_tv_name) as TextView
+        val tv_space: TextView = view.findViewById(R.id.i_drugs_search_tv_space) as TextView
+        val tv_company:TextView = view.findViewById(R.id.i_drugs_search_tv_company) as TextView
+        val drugSearchEntity = getItem(position)
+        tv_name.text = drugSearchEntity.name
+        tv_space.text = drugSearchEntity.packing_spec
+        tv_company.text = drugSearchEntity.manufacturer
+        return view
+    }
+
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                val filterResults = FilterResults()
+                filterResults.values = drugsList
+                filterResults.count = drugsList!!.size
+                return filterResults
+            }
+
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                notifyDataSetChanged()
+            }
+
+        }
+    }
+}
+
+```

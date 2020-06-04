@@ -1,0 +1,2 @@
+#app：《当前Activity》
+ 	它可以获取当前打开页面的Activity，正在重构时可以快速追踪当前Activity

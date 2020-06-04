@@ -1,0 +1,3 @@
+#(一个Android Alerter库)[https://github.com/Tapadoo/Alerter]
+1.该库旨在克服Toasts和Snackbars的局限性，同时降低布局的复杂性。
+2.考虑到简单性，Alerter使用构建器模式来促进轻松集成到任何应用程序中。可自定义的“警报”视图会动态添加到窗口的“装饰”视图中，并覆盖所有内容。

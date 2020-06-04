@@ -1,0 +1,124 @@
+#微信支付官方
+	-开发文档：https://pay.weixin.qq.com/wiki/doc/api/app/app.php?chapter=11_1#
+
+	![微信支付的架构和流程图](https://img-blog.csdn.net/20150321160503420)
+##微信相关文章
+##微信的文件包（.wxapi.WXPayEntryActivity)必须放在App根目录下否则无法调用
+	1.https://blog.csdn.net/lc_miao/article/details/79867140；描述了微信支付中的几大坑，可提前看一下，避免踩坑
+		（1）新建的WXPayEntryActivity类包名路径不对）长话短说，这里千言万语融成一句话：一定要在建立一个 包名.wxapi.WXPayEntryActivity比如你的包名是：com.example.demo。那么你就得配置一个com.example.demo.wxapi.WXPayEntryActivity
+			千万要注意，不要随便乱放这个Activity，也不能改名，就叫WXPayEntryActivity。包名跟你申请应用的时候填写的包名一致。
+		（2）AndroidManifest.xml注册WXPayEntryActivity（坑二：没有配置android:exported=“true”）android:exported=“true”，这个属性代表着运行被外界程序所启动这个Activity，微信对于我们的app来说就是外部程序了，要回调我们的Activity
+		<activity android:name=".wxapi.WXPayEntryActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            ></activity>
+        （3）实现IWXAPIEventHandler接口，注册API（坑三：没有在onCreate里注册API）
+        （4）在onResp方法里编写支付后的回调处理逻辑（坑四：回调处理逻辑搞错）
+
+	2.android微信支付问题总结：https://blog.csdn.net/zh1053935924/article/details/80915913
+		-改文章对微信支付步骤进行了详细的介绍，对新手教友好
+#在接微信支付时，出现问题：只能支付第一次，其后都不能支付
+	-2019/4/19：今日问题原因，微信官方平台的签名错误，平台上使用的是签名工具生产的包名，而不是App的签名字符串如：a12sdd13a2sd132sd31d3s2ds32等等；
+
+------
+#微信订单有效时间
+-订单的有效时长是由你传的参数time_expire决定，如果没有设置这个参数，在prepayid2小时失效后，需要重新请求下单获取新的prepay_id
+-【网站】
+-https://developers.weixin.qq.com/community/develop/doc/000e04dbee87d8f106682be3751c00?highLine=%25E8%25AE%25A2%25E5%258D%2595%25E6%2597%25B6%25E9%2597%25B4
+·
+
+# 在与后台联调微信支付时，出现一直无法调用成功，返回的数据一直为{"prepayId":"wx23174728905661850b2008ce1445747300","errCode":-1}
+-通过多次测试，确定是后台同事的sign凭借出错，导致一直无法调用微信支付，可以在android本地生成sign签名
+-参考了这几个网站：
+https://blog.csdn.net/panghaha12138/article/details/81208121
+https://blog.csdn.net/Ser_Bad/article/details/68490947
+//在android端生成sign签名
+appId ： 直接定义为常量即可
+packageValue ：直接使用"Sign=WXPay",这是一个固定的值。
+sign：如果服务器端已经做过了签名生成，那么这里直接拿着赋值给PayReq 对象即可；如果服务器端没有做，那么还需要在本地进行签名生成之后，再赋值。
+这个本地签名生成其实就是将上面的除了sign 以外的6个字段，拼接成key-value形式的字符串，再进行MD5加密，代码如下：
+
+
+```
+//开始将6个字段进行数据封装
+List<WXModel> list = new LinkedList<>();
+list.add(new WXModel("appid", payReq.appId));
+list.add(new WXModel("noncestr", payReq.nonceStr));
+list.add(new WXModel("package", payReq.packageValue));
+list.add(new WXModel("partnerid", payReq.partnerId));
+list.add(new WXModel("prepayid", payReq.prepayId));
+list.add(new WXModel("timestamp", payReq.timeStamp));
+payReq.sign = genAppSign(list);
+//...发起请求即可 /** * 生成签名 */
+private String genAppSign(List<WXModel> list) {   
+ StringBuilder sb = new StringBuilder(); 
+   for (int i = 0; i < list.size(); i++) { 
+       sb.append(list.get(i).key);  
+      sb.append('=');      
+  sb.append(list.get(i).value); 
+       sb.append('&');    }   
+ sb.append("key=");   
+ sb.append(Constant.WX_APP_KEY);   
+ String appSign = MD5Utils.getMessageDigest(sb.toString().getBytes()).toUpperCase();  
+  return appSign;
+  }
+  ```
+  ```
+  第二种方法使用：我试着将nonce_str、prepayid、trade_type、package、body、out_trade_no、time_start这几个全部注释掉还是可以进行调用微信支付mch_id改成prepayid任然可以吊起，为什么？？
+ 
+    fun getOderXml(prepay: WxPayOrderApi.PayResponse): String {
+        val oderMap = HashMap<String,String>()
+        oderMap.put("appid", prepay.appid) //
+        oderMap.put("mch_id", prepay.mch_id)//
+        oderMap.put("nonce_str", prepay.nonce_str)//
+        oderMap.put("prepayid", prepay.prepay_id)
+        oderMap.put("trade_type", prepay.trade_type)
+        oderMap.put("package", "Sign=WXPay")
+        oderMap.put("body", prepay.qianduan)
+        oderMap.put("out_trade_no", prepay.trade_type)
+        oderMap.put("time_start", prepay.timeStamp)
+
+        //拼接字符串加上key值，然后对sign进行md5解密，之后再转成大写
+        //将集合M内非空参数值的参数按照参数名ASCII码从小到大排序
+        val sign = StringBuilder()
+        val set = TreeSet(Comparator<String> { lhs, rhs ->
+            val i = rhs.compareTo(lhs)
+            if (i > 0) {
+                -1
+            } else if (i < 0) {
+                1
+            } else {
+                i
+            }
+        })
+        set.addAll(oderMap.keys)
+
+        for (str in set) {
+            sign.append(str).append("=").append(oderMap.get(str)).append("&")
+        }
+        sign.append("key").append("=").append("DYZHkj201809171919911816ChenHanA")
+        oderMap.put("sign", MD5Util.MD5Encode(sign.toString(),""))
+
+        //拼接成xml格式的字符串
+        val stringBuilder = StringBuilder()
+        stringBuilder.append("<xml>")
+        set.clear()
+        set.addAll(oderMap.keys)
+        for (s in set) {
+            stringBuilder.append("<").append(s).append(">")
+            stringBuilder.append(oderMap.get(s))
+            stringBuilder.append("</").append(s).append(">")
+        }
+        stringBuilder.append("</xml>")
+        return stringBuilder.toString()
+    }
+```
+注意
+
+签名工作一般由后台完成，在生成签名时，务必注意：
+*key的拼写问题，比如必须拼appid而不是appId，必须拼prepayid而不是prepayId，这里跟上面PayReq 对象中字段的命名方式不一样，用错了也是照样返回-1。
+	-前端同事在调用微信支付时，一直支付失败，结果发现任然是sign位置出错，在微信官方文档第三步上说全部大写，但是实际上同事全部改成小写后才运行成功
+*在签名的时候，参数名要按照ASCII码从小到大排序
+作为server端不要忽略了这一点，坑移动端的同事一把
+签名所使用的是 微信商户平台的API密钥，而不是微信开放平台 的 AppSecret。 API密钥在商户平台后台-->API安全-->先安装操作证书，后设置密钥。见下图：
+

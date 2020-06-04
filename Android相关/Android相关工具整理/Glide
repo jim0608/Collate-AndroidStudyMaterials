@@ -1,0 +1,10 @@
+#GLide加载图片框架、
+使用GLide在fragment中加载图片时出现内存溢出（https://stackoverflow.com/questions/31964737/glide-image-loading-with-application-context/32887693#32887693）
+解决方法：想象一下Fragment，动态添加到Activity。在它的onCreateView方法中，它启动3MB图像的Glide加载。现在，如果用户按下后退按钮并删除片段或整个活动已关闭，该怎么办？
+
+如果你with(getActivity().getApplicationContext())没有使用任何东西，那么所有3MB的数据都会被下载然后被解码，缓存，甚至可能被设置为ImageView，然后被垃圾收集，因为它的唯一引用来自Glide内部。
+如果您使用with((Fragment)this)Glide订阅Fragment的生命周期事件，并且一旦Fragment停止，则应暂停任何未完成的请求; 当销毁时，所有待处理的请求都将被清除。这意味着图像下载将在中途停止，并且该死片段将不再使用更多资源。
+如果您使用with(getActivity())Glide订阅Activity的生命周期事件，则会发生与上述相同的事情，但仅限于Activity停止或销毁时。
+因此，最佳做法是使用最接近的可能上下文/片段来避免未使用的请求完成！（还有一种手动方式来阻止负载：Glide.clear(ImageView|Target)。）
+
+initData():userId = 32,targetUserId = 4,targetUserName = 刘海柱

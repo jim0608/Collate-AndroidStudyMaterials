@@ -1,0 +1,236 @@
+#ActivityManager：对项目中activity管理
+```
+import android.app.Activity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
+/**
+ * Activity栈管理
+ * Add by LuJinming
+ */
+public class ActivityManager {
+
+    //activity 栈管理
+    private Stack<Activity> activityStack ;
+
+    //添加Activity
+    public void addActivity(Activity activity){
+            activityStack.add(activity);
+    }
+
+    /**
+     * 移除activity
+     */
+    public void removeActivity( Activity activity) {
+        if (activity != null) {
+            activityStack.remove(activity);
+        }
+    }
+
+    //获取栈顶 Activity
+    public Activity getTopActivity(){
+        return activityStack.lastElement();
+    }
+
+    //获取栈底 Activity
+    public Activity getBottomActivity(){
+        return activityStack.firstElement();
+    }
+
+    public void finishAllActivity() {
+        while(!activityStack.empty()){
+            activityStack.pop().finish();
+        }
+    }
+    public Activity findActivity(Class<?> cls){
+        for(Activity activity : activityStack){
+            if(activity.getClass() == cls){
+                return activity;
+            }
+        }
+
+        return null;
+    }
+
+    public void finishActivity(Activity activity){
+        removeActivity(activity);
+        activity.finish();
+    }
+
+    public void finishOtherActivity(Class<?> cls){
+        List<Activity> activityList = new ArrayList<>();
+        for(Activity activity:activityStack){
+            if(activity.getClass() != cls){
+                activityList.add(activity);
+            }
+        }
+
+        for(Activity activity:activityList){
+            finishActivity(activity);
+        }
+    }
+
+    private ActivityManager(){
+        activityStack = new Stack<>();
+    }
+
+    public static ActivityManager Instance(){
+        return ActivityManagerHolder.activityManager;
+    }
+
+    public static class ActivityManagerHolder{
+        private static final ActivityManager activityManager = new ActivityManager();
+    }
+
+
+}
+```
+
+#activity基类：
+```
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
+
+/**
+ * Activity 基础类
+ * Add by LuJinming
+ */
+public class BaseActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        ActivityManager.Instance().addActivity(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ActivityManager.Instance().removeActivity(this);
+    }
+
+    protected void gotoActivity(Class<?> cls){
+        gotoActivity(cls,null);
+    }
+
+    protected void gotoActivity(Class<?> cls,Bundle bundle){
+        gotoActivity(cls,false,bundle);
+    }
+
+    protected void skipActivity(Class<?> cls){
+        skipActivity(cls,null);
+    }
+
+    protected void skipActivity(Class<?> cls,Bundle bundle){
+        gotoActivity(cls,true,bundle);
+    }
+
+
+    protected void gotoActivity(Class<?> cls, boolean isCloseCurrentActivity, Bundle bundle){
+        Intent intent = new Intent(this,cls);
+
+        //设置参数
+        if(bundle!=null){
+            intent.putExtras(bundle);
+        }
+
+        startActivity(intent);
+        if(isCloseCurrentActivity){
+            finish();
+        }
+    }
+
+    protected BaseActivity getActivity(){
+        return this;
+    }
+
+
+}
+```
+
+#[拒绝BaseActivity，优雅的代替BaseActivity](https://www.jianshu.com/p/2a47381dd9ec)
+    -相关使用：[借助简单便捷的ActivityLifecycleCallbacks实现全周期监听Activity](https://blog.csdn.net/crazymo_/article/details/78875686)
+    -在这个页面中可以了解在application与Activity的生命周期，这样就可以在相关的生命周期使用特定的功能
+-这个Lifecycle，他是属于Application中的一个接口，他可以用来做为baseActivity，也可以
+-Application.ActivityLifecycleCallbacksgais：一经注册，就会自动监听整个APP 中所有Activity 的生命周期方法的执行（会在对应的父类Activity的方法被执行之后自动触发）。
+
+```
+//注意：
+ <application
+        android:name=".MyApplication"//MyApplication放在这就可以监听每个Activity从启动到结束的生命周期
+           android:theme="@style/AppTheme">
+
+           <activity android:name=".activities.LaunchActivity"
+            android:label="@string/app_name"
+            android:theme="@style/MarioTheme.Day">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+           </application>
+
+public class MyApplication extends Application {
+
+ @Override
+    public void onCreate() {
+        super.onCreate();
+        init();
+    }
+
+    private void init() {
+        registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+
+                activity.setTheme(R.style.MarioTheme_Night);
+                Log.e("Lifecycle",activity.getLocalClassName()+" was Created"+"activity==null   "
+                        +(activity==null)+"     activity.isFinishing()  "+(activity.isFinishing())+"    activity.isDestroyed()  ");
+            }
+
+            @Override
+            public void onActivityStarted(Activity activity) {
+                Log.e("Lifecycle",activity.getLocalClassName()+" was Started"+"activity==null   "
+                        +(activity==null)+"     activity.isFinishing()   "+(activity.isFinishing())+"   activity.isDestroyed()  ");
+            }
+
+            @Override
+            public void onActivityResumed(Activity activity) {
+                Log.e("Lifecycle",activity.getLocalClassName()+" was oResumed"+"activity==null   "
+                        +(activity==null)+"activity.isFinishing()   "+(activity.isFinishing())+"activity.isDestroyed() ");
+            }
+
+            @Override
+            public void onActivityPaused(Activity activity) {
+                Log.e("Lifecycle",activity.getLocalClassName()+" was Pauseed"+"activity==null   "
+                        +(activity==null)+"activity.isFinishing()   "+(activity.isFinishing())+"activity.isDestroyed()  ");
+            }
+
+            @Override
+            public void onActivityStopped(Activity activity) {
+                Log.e("Lifecycle",activity.getLocalClassName()+" was Stoped"+"activity==null    "
+                        +(activity==null)+"activity.isFinishing()   "+(activity.isFinishing())+"activity.isDestroyed() ");
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+                Log.e("Lifecycle",activity.getLocalClassName()+" was SaveInstanceState"+"activity==null "
+                        +(activity==null)+"activity.isFinishing()   "+(activity.isFinishing())+"activity.isDestroyed()  ");
+            }
+
+            @Override
+            public void onActivityDestroyed(Activity activity) {
+                Log.e("Lifecycle",activity.getLocalClassName()+" was Destroyed"+"activity==null"
+                        +(activity==null)+"  activity.isFinishing()  "+(activity.isFinishing())+"  activity.isDestroyed()");
+            }
+        });
+    }
+ }
+
+```

@@ -1,0 +1,60 @@
+# [Kotlin：命名参数、默认参数值、可变参数、局部函数](https://juejin.im/post/5cf61aedf265da1bd522bb2c)
+#Kotlin中使用Fragment在onCreateView中给控件设置事件运行报null object空指针异常
+-在使用Kotlin时我们喜欢直接对xml文件中的控件id直接使用，但是在对Fragment的onCreateView 生命周期中使用时会遇到空指针异常的情况
+
+解决办法分为2种：
+
+1：onCreateView中使用前先进行 findViewById<>()操作然后在使用，不过不推荐，因为这就用不到Kotlin的方便了
+
+2：在Fragment的 onActivityCreated生命周期中操作，因为这时侯布局加载完成了，所以引用对象存在了
+
+3.在java与Kotlin混合使用时，java传值时是可以允许为null的，在Kotlin接收Java传过来的数据时，若Java数据中有Null则需要在接收的Kotlin的位置加上？，允许为空
+
+
+#（kotlin扩展函数(一)）[https://www.jianshu.com/p/25332d9a77e0]
+1.講了一些Kotlin使用方法，減少代碼量
+#（Kotlin扩展函数（二））[https://www.jianshu.com/p/d6858f10ecd4]
+2.使用Kotlin的一些Util 如創建fragment等
+
+# Koltin中属性在声明的同时也要求要被初始化，否则会报错。
+(对延迟初始化的使用：最容易理解)[https://blog.csdn.net/liyi1009365545/article/details/84236433]
+(从原理分析Kotlin的延迟初始化: lateinit var和by lazy)[https://blog.csdn.net/dpl12/article/details/80758049]
+- lateinit:
+	1.lateinit只能修饰变量var ，不能修复常量val
+	2.他不能对Java的基本类型进行修饰，如：Int，Double，Char，Long等(因为基本类型在类加载后的准备阶段就会被初始化为默认值)
+	3.在调用lateinit修饰的变量时要对其赋值，不然会包未初始化异常
+	4.不能对null使用
+- by lazy{}:
+	1.lazy{}:只能修饰常量val，不能修饰变量var
+	2.by lazy{}放在要修饰常量的类型后面，如：val test：String by lazy{}
+	3.by lazy{}在第一次调用时初始化括号里面数据，括号内最下方的一行为最终的赋值，以后调用该常量得到的值都是括号内的最后一个值
+	4.by lazy本身是一种属性委托。属性委托的关键字是by。
+
+# Java中代码常使用方式转Kotlin
+- Java：new InputFilter[]{new InputFilter.LengthFilter(maxLength)}
+- Kotlin:arrayof<InputFilter>(InputFilter.lengthFilter(maxLength))
+
+# Kotlin Toast扩展函数
+	1.fun Context.mContextToast(msg:String?,length:Int = Toast.LENGTH_SHORT) = Toast.makeText(this,msg,length).show()
+	2.fun mAppToast(msg:String?,length:Int = Toast.LENGTH_SHORT) = Toast.makeText(App.getContext(),msg,length).show()
+这里面“1”只能在Activity层中使用，2，必须在Application中定义context
+
+# Kotlin vararg参数gongn
+```kotlin
+fun printAll(vararg messages: String) {                            // 1
+    for (m in messages) println(m)
+}
+printAll("Hello", "Hallo", "Salut", "Hola", "你好")                 // 2
+
+fun printAllWithPrefix(vararg messages: String, prefix: String) {  // 3
+    for (m in messages) println(prefix + m)
+}
+printAllWithPrefix(
+    "Hello", "Hallo", "Salut", "Hola", "你好",
+    prefix = "Greeting: "                                          // 4
+)
+```
+1.对于非可变参数，需要使用命名参数的形式来调用"prefix = "Greeting: "
+2.可变参数本质上就是一个数组，如果某个方法中声明可变参数，那么我们既可以传递任意离散的参数值，也可以传递一个数组。
+3.在 Java 中，可以直接将数组传递给可变参数，而 Kotlin 要求显式地解包数组，以便每个数组元素在函数中能够作为单独的参数来调用，这个功能被称为展开运算符，使用方式就是在数组参数前加一个 *
+{"userId": 2}

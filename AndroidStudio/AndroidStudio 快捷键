@@ -1,0 +1,10 @@
+#Android Studio 快捷键之切换大小写
+-大小写切换
+-Ctrl+Shift+U
+
+#Android Studio 快捷键之try catch
+-生成 try catch的快捷键： 
+-Ctrl+Alt+T
+
+#AS 将代码隐藏为省略符号
+-ctrl+Window+.

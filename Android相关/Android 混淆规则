@@ -1,0 +1,60 @@
+#Android 混淆使用
+##ProGuard 简介
+ProGuard 能够对 Java 类中的代码进行压缩（Shrink），优化（Optimize），混淆（Obfuscate），预检（Preveirfy）。 
+
+压缩（Shrink）：检测和删除没有使用的类，字段，方法和属性。 
+
+优化（Optimize）：对字节码进行优化，并且移除无用指令。 
+
+混淆（Obfuscate）：使用 a，b，c 等无意义的名称，对类，字段和方法进行重命名。 
+
+预检（Preveirfy）：主要是在 Java 平台上对处理后的代码进行预检。
+
+##混淆生成文件
+#混淆前后的映射
+-printmapping mapping.txt
+#记录生成的日志数据,gradle build时在本项目根目录输出
+#apk 包内所有 class 的内部结构
+-dump class_files.txt
+#未混淆的类和成员
+-printseeds seeds.txt
+#列出从 apk 中删除的代码
+-printusage unused.txt
+这些文件保存在 /build/outputs/mapping/release/ 中。
+
+
+
+-使用时注意事项：对项目中集成的SDK的混淆规则了解并单独提出来，
+
+-注意，直接build生成的APK是不进行混淆的，必须是signed的apk才会混淆
+
+##混淆使用的相关网址：
+
+-[Android 代码混淆 混淆方案](https://www.jianshu.com/p/e9d3c57ab92f?utm_campaign=haruki&utm_content=note&utm_medium=reader_share&utm_source=qq)
+	+本篇文章：自己在混淆的时候整理出比较全面的混淆方法，比较实用，自己走过的坑，淌出来的路。请大家不要再走回头路，可能只要我们代码加混淆，一点不对就会导致项目运行崩溃等后果，有许多人发现没有打包运行好好地，打包完成以后而又不不可以了，导致了许多困惑，本片文章来为大家解决困惑，希望对大家有帮助。
+
+-[Android代码混淆实战](https://www.jianshu.com/p/e747b538d0f0)
+
+	+本篇文章对混淆进行了比较详细的
+
+-这篇文章对混淆的使用符号进项了详细的讲解，让人对混淆更加了解
+##[带你彻底明白 Android Studio 打包混淆](https://blog.csdn.net/guolipeng_network/article/details/74551968)
+	+对混淆的各个符号进行了介绍
+	+在使用Android Studio混淆打包时，该IDE自身集成了Java语言的ProGuard作为压缩，优化和混淆工具，配合Gradle构建工具使用很简单。只需要在工程应用目录的gradle文件中设置minifyEnabled为true即可。然后我们就可以到proguard-rules.pro文件中加入我们的混淆规则了
+	+如果既想保持类名，又想保持里面的内容不被混淆，我们就需要以下方法了:-keep class cn.hadcn.test.* {*;}（注意：这儿也有"*"和"**"的区别）
+	+一颗星 ：表示只是保持该包下的类名，而子包下的类名还是会被混淆：-keep class cn.hadcn.test.*
+	+两颗星 ：表示把本包和所含子包下的类名都保持；用以上方法保持类后，你会发现类名虽然未混淆，但里面的具体方法和变量命名还是变了：-keep class cn.hadcn.test.**
+
+
+-https://www.cnblogs.com/jymblog/p/6531955.html
+
+-因为开启混淆会使编译时间变长，所以debug模式下不开启。我们需要做的是：
+1.将release下minifyEnabled的值改为true，打开混淆；
+2.加上shrinkResources true，打开资源压缩。
+3.buildConfigField 不显示log日志
+4.signingConfig signingConfigs.config配置签名文件文件
+
+##[Glide混淆踩坑日记](https://www.jianshu.com/p/4d35df5c8867)
+
+# 代码混淆，使用proGuard代码混淆器工具,它包括压缩，优化，混淆等功能。
+

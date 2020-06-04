@@ -1,0 +1,30 @@
+ #图片：![avatar](https://upload-images.jianshu.io/upload_images/7508328-41e30f8bf75b2d1f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/340/format/webp)
+ #文章
+ onCreate：fragment初次创建时调用。尽管它看起来像是Activity的OnCreate()函数，但这个只是用来创建Fragment的。此时的Activity还没有创建完成，因为我们的Fragment也是Activity创建的一部分。所以如果你想在这里使用Activity中的一些资源，将会获取不到。比如：获取同一个Activity中其它Frament的控件实例。(代码如下：)，如果想要获得Activity相关联的资源，必须在onActivityCreated中获取。
+
+
+onCreateView：在这个fragment构造它的用户接口视图(即布局)时调用。
+
+
+onActivityCreated：在Activity的OnCreate()结束后，会调用此方法。所以到这里的时候，Activity已经创建完成！在这个函数中才可以使用Activity的所有资源。如果把下面的代码放在这里，获取到的btn_Try的值将不会再是空的！
+
+
+onStart：当到OnStart()时，Fragment对用户就是可见的了。但用户还未开始与Fragment交互。在生命周期中也可以看到Fragment的OnStart()过程与Activity的OnStart()过程是绑定的。意义即是一样的。以前你写在Activity的OnStart()中来处理的代码，用Fragment来实现时，依然可以放在OnStart()中来处理。
+
+
+onResume：当这个fragment对用户可见并且正在运行时调用。这是Fragment与用户交互之前的最后一个回调。从生命周期对比中，可以看到，Fragment的OnResume与Activity的OnResume是相互绑定的，意义是一样的。它依赖于包含它的activity的Activity.onResume。当OnResume()结束后，就可以正式与用户交互了。
+
+
+onPause：此回调与Activity的OnPause()相绑定，与Activity的OnPause()意义一样。
+
+
+onStop：这个回调与Activity的OnStop()相绑定，意义一样。已停止的Fragment可以直接返回到OnStart()回调，然后调用OnResume()。
+
+
+onDestroyView：如果Fragment即将被结束或保存，那么撤销方向上的下一个回调将是onDestoryView()。会将在onCreateView创建的视图与这个fragment分离。下次这个fragment若要显示，那么将会创建新视图。这会在onStop之后和onDestroy之前调用。这个方法的调用同onCreateView是否返回非null视图无关。它会潜在的在这个视图状态被保存之后以及它被它的父视图回收之前调用。
+
+
+onDestroy：当这个fragment不再使用时调用。需要注意的是，它即使经过了onDestroy()阶段，但仍然能从Activity中找到，因为它还没有Detach。
+
+
+onDetach：Fragment生命周期中最后一个回调是onDetach()。调用它以后，Fragment就不再与Activity相绑定，它也不再拥有视图层次结构，它的所有资源都将被释放。

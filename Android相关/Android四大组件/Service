@@ -1,0 +1,13 @@
+#LocalService两种启动方式
+1.通过StartService启动：
+	-特点：一旦服务启动了，service与开启者没有任何关系了，无论开启者退出，崩溃。服务都会在后台持续运行，绑定者无法调用服务中方法
+	-使用start方式启动的生命周期：
+	onCreate() -- > onStartCommand() -- > onDestory()
+	
+	注意：如果服务已经开启，不会重复回调onCreate()方法，如果再次调用context.startService()方法，service而是会调用onStart()或者onStartCommand()方法。停止服务需要调用context.stopService()方法，服务停止的时候回调onDestory被销毁。
+
+2.通过bindservice启动：
+	-特点：bind启动服务方式，绑定服务，一旦开启者崩溃或结束，服务也会跟着结束，绑定者可以调用服务中的方法
+	-生命周期：
+	onCreate()->onBind()->onUnBind()->onDestroy()
+	注意：绑定服务不会调用onStart()或者onStartCommand()方法

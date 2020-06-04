@@ -1,0 +1,31 @@
+#（evaluateJavascript与@JavascriptInterface）的区别
+1.public void evaluateJavascript(String var1, ValueCallback<String> var2) {}
+	-Android调用js中的方法
+2. @JavascriptInterface
+	public void getClick（）{}
+	-js调用android中的方法（被调用方法必须要用@JavascriptInterface标注，且webview要.addJavascriptInterface（相应的class文件，TAG标签））
+
+3.在android的端进行文本view方面代码调试，可以看到在手机上运行前端代码的错误：chrome://inspect/#devices（需要翻墙）
+
+4.在混合开发时，使用webView加载的（https格式）网页，在网页中有（http）格式的图片需要加载，在加载时会出现图片加载不出来
+	错误原因：这个是http和https的混合问题。而且只会在Android5.0及以上的出现。那是因为从Android5.0开始，WebView默认不支持同时加载Https和Http混合模式。
+	解决办法：
+			```
+			1、在X5内核的WebView中，是找不到MIXED_CONTENT_ALWAYS_ALLOW这些参数的，只能手动把值设上去。下面给出对应的值：
+			MIXED_CONTENT_NEVER_ALLOW = 0；
+			MIXED_CONTENT_ALWAYS_ALLOW = 1；
+			MIXED_CONTENT_COMPATIBILITY_MODE = 2；
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			            webSetting.setMixedContentMode(2);
+			        }
+			2、在webview设置中还可以加上另外一个设置：
+
+			//解除数据阻止
+			webSettings.setBlockNetworkImage(false);
+			————————————————
+			版权声明：本文为CSDN博主「Json森」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
+			原文链接：https://blog.csdn.net/tinson12321/article/details/81627070
+			```
+
+5.在退出登录时需要清除LocalStorage中数据[https://www.jianshu.com/p/33313b2030ab]
+ - WebStorage.getInstance().deleteAllData()

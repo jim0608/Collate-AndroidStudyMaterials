@@ -1,0 +1,78 @@
+#初次进入Activity时，EditText自动获取焦点，弹出软键盘
+##问：
+	如何实现：进来时软键盘不弹出，点击EditText时，可编辑且弹出软键盘
+##方法：
+	1.首先设置editText.setFocusable(false);editText.setFocusableInTouchMode(false);让他失去焦点就不会弹出软键盘。
+	2.设置EditText.setOnTouchListener(new View.OnTouchListener() {});触摸时就可获取焦点并弹出软键盘；
+
+
+
+#解决android EditText自动获取焦点的问题
+1.在EditText的父级控件中找一个，设置成
+```
+android:focusable=”true” 
+android:focusableInTouchMode=”true”
+```
+
+
+2019/5/23
+#EditText：[android全屏／沉浸式状态栏下，各种键盘挡住输入框解决办法](https://blog.csdn.net/smileiam/article/details/69055963)
+-非透明状态栏下使用adjustResize和adjustPan，或是透明状态栏下使用fitsSystemWindows=true属性
+-在AndroidManifest.xml对应的Activity里添加 
+	+android:windowSoftInputMode=”adjustPan”或是android:windowSoftInputMode=”adjustResize”属性
+-adjustResize：调整Activity主窗口的尺寸为屏幕上的软键盘腾出空间
+-adjustPan：不调整activity主窗口的尺寸，而是通过自动平移窗口的内容使当前焦点不被键盘盖住
+
+
+
+
+#[点击EditText之外的地方隐藏软键盘，亲测。](https://blog.csdn.net/woqq863787405/article/details/81170145)
+代碼如下
+```
+   //点击EditText之外的区域隐藏键盘
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            var v = currentFocus
+            if (isSoftShowing() && isShouldHideInput(v, ev)) {//点击editText控件外部
+                var imm =  getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                if (imm != null) {
+                    imm!!.hideSoftInputFromWindow(v!!.windowToken, 0)
+                    if (search != null) {
+                        search.clearFocus()
+                    }
+                }
+            }
+            return super.dispatchTouchEvent(ev)
+        }
+        // 必不可少，否则所有的组件都不会有TouchEvent了
+        return getWindow().superDispatchTouchEvent(ev) || onTouchEvent(ev);
+    }
+
+    //判断软键盘是否正在展示
+    private fun isSoftShowing(): Boolean {
+        //获取当前屏幕内容的高度
+        val screenHeight = window.decorView.height
+        //获取View可见区域的bottom
+        val rect = Rect()
+        window.decorView.getWindowVisibleDisplayFrame(rect)
+
+        return screenHeight - rect.bottom !== 0
+    }
+
+
+    //是否需要隐藏键盘
+    fun isShouldHideInput(v: View?, event: MotionEvent): Boolean {
+        if (v != null && v is EditText) {
+            val leftTop = intArrayOf(0, 0)
+            //获取输入框当前的location位置
+            v!!.getLocationInWindow(leftTop)
+            val left = leftTop[0]
+            val top = leftTop[1]
+            val bottom = top + v!!.getHeight()
+            val right = left + v!!.getWidth()
+            return !(event.x > left && event.x < right
+                    && event.y > top && event.y < bottom)
+        }
+        return false
+    }
+    ````

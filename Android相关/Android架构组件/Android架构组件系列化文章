@@ -1,0 +1,7 @@
+#Google官方推出的Android架构组件系列文章
+（一）App架构指南(https://www.jianshu.com/p/fe509262a1f7)
+（二）将Architecture Components引入工程(https://www.jianshu.com/p/13d9a6b16b0d)
+（三）处理生命周期(https://www.jianshu.com/p/4b71bcd586c6)
+（四）LiveData(https://www.jianshu.com/p/d4f5bb4a9234)
+（五）ViewModel(https://www.jianshu.com/p/bbb570716ad3)
+（六）Room持久化库(https://www.jianshu.com/p/ef7cbf7c12b1)

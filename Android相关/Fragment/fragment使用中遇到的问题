@@ -1,0 +1,8 @@
+#Activity添加Fragment
+问题：The specified child already has a parent. 
+原因：1.在fragment中onCreateView() 返回（return）的view应该在里面加上false ，如：
+```
+override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater?.inflate(R.layout.fragment_calldoc_memberinfo,container,false)
+    }
+```
